@@ -1,0 +1,14 @@
+{
+
+  // Java verticle
+  "main":"org.pac4j.vertx.Pac4jVerticle",
+  "worker": true,
+
+  // If your module is going to be registered in the Vert.x module registry you will also need the following
+  // mandatory fields
+  "description":"Vert.x pac4j demo",
+  "licenses": ["The Apache Software License Version 2.0"],
+  "author": "Michael Remond",
+
+  "auto-redeploy": true
+}
