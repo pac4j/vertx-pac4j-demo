@@ -30,7 +30,10 @@ import org.pac4j.vertx.handlers.RequiresAuthenticationHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
+
+import com.campudus.vertx.sessionmanager.java.SessionHelper;
 
 /**
  * Vert.x pac4j demo verticle. This verticle is currently a worker because some authentication mechanisms require
@@ -45,32 +48,37 @@ public class Pac4jVerticle extends Verticle {
     @Override
     public void start() {
 
+        container.deployModule("com.campudus~session-manager~2.0.1-final", new JsonObject());
+
+        SessionHelper sessionHelper = new SessionHelper(vertx);
         Clients clients = buildClients();
         Config.setClients(clients);
 
         RouteMatcher rm = new RouteMatcher();
 
-        rm.get("/facebook/index.html", new RequiresAuthenticationHandler("FacebookClient",
-                DemoHandlers.authenticatedHandler));
-        rm.get("/twitter/index.html", new RequiresAuthenticationHandler("TwitterClient",
-                DemoHandlers.authenticatedHandler));
-        rm.get("/form/index.html", new RequiresAuthenticationHandler("FormClient", DemoHandlers.authenticatedHandler));
+        DemoHandlers.AuthenticatedHandler authenticatedHandler = new DemoHandlers.AuthenticatedHandler(sessionHelper);
+        rm.get("/facebook/index.html", new RequiresAuthenticationHandler("FacebookClient", authenticatedHandler,
+                sessionHelper));
+        rm.get("/twitter/index.html", new RequiresAuthenticationHandler("TwitterClient", authenticatedHandler,
+                sessionHelper));
+        rm.get("/form/index.html", new RequiresAuthenticationHandler("FormClient", authenticatedHandler, sessionHelper));
         rm.get("/form/index.html.json", new RequiresAuthenticationHandler("FormClient", true,
-                DemoHandlers.authenticatedJsonHandler));
-        rm.get("/basicauth/index.html", new RequiresAuthenticationHandler("BasicAuthClient",
-                DemoHandlers.authenticatedHandler));
-        rm.get("/cas/index.html", new RequiresAuthenticationHandler("CasClient", DemoHandlers.authenticatedHandler));
-        rm.get("/saml2/index.html", new RequiresAuthenticationHandler("Saml2Client", DemoHandlers.authenticatedHandler));
+                new DemoHandlers.AuthenticatedJsonHandler(sessionHelper), sessionHelper));
+        rm.get("/basicauth/index.html", new RequiresAuthenticationHandler("BasicAuthClient", authenticatedHandler,
+                sessionHelper));
+        rm.get("/cas/index.html", new RequiresAuthenticationHandler("CasClient", authenticatedHandler, sessionHelper));
+        rm.get("/saml2/index.html", new RequiresAuthenticationHandler("Saml2Client", authenticatedHandler,
+                sessionHelper));
 
         rm.get("/theForm.html", DemoHandlers.formHandler);
 
-        CallbackHandler callback = new CallbackHandler();
+        Handler<HttpServerRequest> callback = addEagerFormParserHandler(new CallbackHandler(sessionHelper));
         rm.get("/callback", callback);
         rm.post("/callback", callback);
 
-        rm.get("/logout", new LogoutHandler());
+        rm.get("/logout", new LogoutHandler(sessionHelper));
 
-        rm.get("/", DemoHandlers.indexHandler);
+        rm.get("/", new DemoHandlers.IndexHandler(sessionHelper));
 
         rm.get("/assets/js/app.js", new Handler<HttpServerRequest>() {
             @Override
@@ -81,6 +89,28 @@ public class Pac4jVerticle extends Verticle {
 
         vertx.createHttpServer().requestHandler(rm).listen(8080, "localhost");
 
+    }
+
+    private Handler<HttpServerRequest> addEagerFormParserHandler(final Handler<HttpServerRequest> toWrap) {
+        return new Handler<HttpServerRequest>() {
+            @Override
+            public void handle(final HttpServerRequest req) {
+                String contentType = req.headers().get(Constants.CONTENT_TYPE_HEADER);
+                if ("POST".equals(req.method()) && contentType != null
+                        && Constants.FORM_URLENCODED_CONTENT_TYPE.equals(contentType)) {
+                    req.expectMultiPart(true);
+                    req.params().add(Constants.FORM_ATTRIBUTES, "true");
+                    req.endHandler(new Handler<Void>() {
+                        @Override
+                        public void handle(Void event) {
+                            toWrap.handle(req);
+                        }
+                    });
+                } else {
+                    toWrap.handle(req);
+                }
+            }
+        };
     }
 
     private Clients buildClients() {

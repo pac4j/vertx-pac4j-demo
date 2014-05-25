@@ -21,6 +21,7 @@ import java.util.Map;
 import org.pac4j.core.context.WebContext;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * WebContext implementation for Vert.x.
@@ -33,11 +34,17 @@ public class VertxWebContext implements WebContext {
 
     private final HttpServerRequest request;
 
+    private final JsonObject attributes;
+
     private final HttpServerResponse response;
 
-    public VertxWebContext(HttpServerRequest request) {
+    private final String sessionId;
+
+    public VertxWebContext(HttpServerRequest request, String sessionId, JsonObject attributes) {
         this.request = request;
         this.response = request.response();
+        this.sessionId = sessionId;
+        this.attributes = attributes;
     }
 
     @Override
@@ -51,6 +58,10 @@ public class VertxWebContext implements WebContext {
             }
         }
         return param;
+    }
+
+    public String getSessionId() {
+        return sessionId;
     }
 
     @Override
@@ -74,14 +85,17 @@ public class VertxWebContext implements WebContext {
 
     @Override
     public void setSessionAttribute(String name, Object value) {
-        String sessionId = StorageHelper.getOrCreateSessionId(request);
-        StorageHelper.save(sessionId, name, value);
+        //System.out.println("set attribute " + name + "=" + value + " => " + JsonObjectConverter.encode(value));
+        attributes.putValue(name, JsonObjectConverter.encode(value));
+    }
+
+    public JsonObject getOutAttributes() {
+        return attributes;
     }
 
     @Override
     public Object getSessionAttribute(String name) {
-        String sessionId = StorageHelper.getOrCreateSessionId(request);
-        return StorageHelper.get(sessionId, name);
+        return JsonObjectConverter.decode(attributes.getValue(name));
     }
 
     @Override

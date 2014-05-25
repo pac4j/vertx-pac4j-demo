@@ -32,6 +32,8 @@ public interface Constants {
 
     public final static String SESSION_ID = "pac4jSessionId";
 
+    public final static String USER_PROFILE = "pac4jUserProfile";
+
     public final static String REQUESTED_URL = "pac4jRequestedUrl";
 
     public final static String FORM_ATTRIBUTES = "pac4jFormAttributes";

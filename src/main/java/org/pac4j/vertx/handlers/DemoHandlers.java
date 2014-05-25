@@ -17,20 +17,21 @@ package org.pac4j.vertx.handlers;
 
 import org.pac4j.cas.client.CasClient;
 import org.pac4j.core.client.Clients;
-import org.pac4j.core.context.WebContext;
 import org.pac4j.core.exception.RequiresHttpAction;
-import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.http.client.BasicAuthClient;
 import org.pac4j.http.client.FormClient;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.TwitterClient;
 import org.pac4j.saml.client.Saml2Client;
 import org.pac4j.vertx.Config;
+import org.pac4j.vertx.Constants;
 import org.pac4j.vertx.HttpResponseHelper;
-import org.pac4j.vertx.StorageHelper;
 import org.pac4j.vertx.VertxWebContext;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
+
+import com.campudus.vertx.sessionmanager.java.SessionHelper;
 
 /**
  * A collection of basic handlers printing dynamic html for the demo application.
@@ -41,12 +42,14 @@ import org.vertx.java.core.http.HttpServerRequest;
  */
 public class DemoHandlers {
 
-    public static Handler<HttpServerRequest> indexHandler = new Handler<HttpServerRequest>() {
-        @Override
-        public void handle(HttpServerRequest req) {
+    public static class IndexHandler extends SessionAwareHandler {
 
-            String sessionId = StorageHelper.getOrCreateSessionId(req);
-            WebContext context = new VertxWebContext(req);
+        public IndexHandler(SessionHelper sessionHelper) {
+            super(sessionHelper);
+        }
+
+        @Override
+        protected void doHandle(final HttpServerRequest req, final VertxWebContext context) {
             Clients client = Config.getClients();
             FacebookClient fbClient = (FacebookClient) client.findClient("FacebookClient");
             TwitterClient twClient = (TwitterClient) client.findClient("TwitterClient");
@@ -55,7 +58,7 @@ public class DemoHandlers {
             CasClient casClient = (CasClient) client.findClient("CasClient");
             Saml2Client saml2Client = (Saml2Client) client.findClient("Saml2Client");
 
-            StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             sb.append("<h1>index</h1>");
             sb.append("<a href=\"facebook/index.html\">Protected url by Facebook : facebook/index.html</a><br />");
             sb.append("<a href=\"twitter/index.html\">Protected url by Twitter : twitter/index.html</a><br />");
@@ -68,7 +71,7 @@ public class DemoHandlers {
             sb.append("<a href=\"logout\">logout</a>");
             sb.append("<br /><br />");
             sb.append("profile : ");
-            sb.append(StorageHelper.getProfile(sessionId));
+            sb.append(context.getSessionAttribute(Constants.USER_PROFILE));
             sb.append("<br /><br />");
             sb.append("<hr />");
             try {
@@ -90,45 +93,51 @@ public class DemoHandlers {
             sb.append("<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js\"></script>");
             sb.append("<script src=\"assets/js/app.js\"></script>");
 
-            HttpResponseHelper.ok(req, sb.toString());
+            writeSessionAttribute(context, new Handler<JsonObject>() {
+                @Override
+                public void handle(JsonObject event) {
+                    HttpResponseHelper.ok(req, sb.toString());
+                }
+            });
+
         }
     };
 
-    public static Handler<HttpServerRequest> authenticatedHandler = new Handler<HttpServerRequest>() {
+    public static class AuthenticatedHandler extends SessionAwareHandler {
+
+        public AuthenticatedHandler(SessionHelper sessionHelper) {
+            super(sessionHelper);
+        }
+
         @Override
-        public void handle(HttpServerRequest req) {
-            String sessionId = StorageHelper.getOrCreateSessionId(req);
+        protected void doHandle(final HttpServerRequest req, final VertxWebContext webContext) {
             StringBuilder sb = new StringBuilder();
             sb.append("<h1>protected area</h1>");
             sb.append("<a href=\"..\">Back</a><br />");
             sb.append("<br /><br />");
             sb.append("profile : ");
-            sb.append(StorageHelper.getProfile(sessionId));
+            sb.append(webContext.getSessionAttribute(Constants.USER_PROFILE));
             sb.append("<br />");
             HttpResponseHelper.ok(req, sb.toString());
         }
     };
 
-    public static Handler<HttpServerRequest> authenticatedJsonHandler = new Handler<HttpServerRequest>() {
+    public static class AuthenticatedJsonHandler extends SessionAwareHandler {
+
+        public AuthenticatedJsonHandler(SessionHelper sessionHelper) {
+            super(sessionHelper);
+        }
+
         @Override
-        public void handle(HttpServerRequest req) {
-            String sessionId = StorageHelper.getOrCreateSessionId(req);
-            CommonProfile profile = StorageHelper.getProfile(sessionId);
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("{\"username\":\"");
-            sb.append(profile.getUsername());
-            sb.append("\"}");
-
+        protected void doHandle(final HttpServerRequest req, final VertxWebContext webContext) {
             req.response().headers().add("Content-Type", "application/json");
-            HttpResponseHelper.ok(req, sb.toString());
+            HttpResponseHelper.ok(req, "{\"username\":\"toto\"}");
         }
     };
 
     public static Handler<HttpServerRequest> formHandler = new Handler<HttpServerRequest>() {
         @Override
         public void handle(HttpServerRequest req) {
-            String sessionId = StorageHelper.getOrCreateSessionId(req);
             FormClient formClient = (FormClient) Config.getClients().findClient("FormClient");
             StringBuilder sb = new StringBuilder();
             sb.append("<form action=\"").append(formClient.getCallbackUrl()).append("\" method=\"POST\">");

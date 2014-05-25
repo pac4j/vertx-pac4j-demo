@@ -19,7 +19,7 @@ import org.pac4j.core.context.HttpConstants;
 import org.vertx.java.core.http.HttpServerRequest;
 
 /**
- * Helper class to generate some basic http responses. 
+ * Helper class to generate some basic http responses.
  * 
  * @author Michael Remond
  * @since 1.0.0

@@ -19,19 +19,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.pac4j.core.client.BaseClient;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.context.HttpConstants;
-import org.pac4j.core.context.WebContext;
 import org.pac4j.core.credentials.Credentials;
 import org.pac4j.core.exception.RequiresHttpAction;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.vertx.Config;
 import org.pac4j.vertx.Constants;
 import org.pac4j.vertx.HttpResponseHelper;
-import org.pac4j.vertx.StorageHelper;
 import org.pac4j.vertx.VertxWebContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
+
+import com.campudus.vertx.sessionmanager.java.SessionHelper;
 
 /**
  * Callback handler for Vert.x pac4j binding. This handler finishes the authentication process.
@@ -47,80 +48,65 @@ import org.vertx.java.core.http.HttpServerRequest;
  * @since 1.0.0
  *
  */
-public class CallbackHandler extends HttpSafeHandler {
+public class CallbackHandler extends SessionAwareHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(CallbackHandler.class);
 
-    private final HttpSafeHandler handler = new HttpSafeHandler() {
+    public CallbackHandler(SessionHelper sessionHelper) {
+        super(sessionHelper);
+    }
 
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        @Override
-        public void handleInternal(HttpServerRequest req) {
-            // clients group from config
-            final Clients clientsGroup = Config.getClients();
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected void doHandle(final HttpServerRequest req, final VertxWebContext webContext) {
+        // clients group from config
+        final Clients clientsGroup = Config.getClients();
 
-            // web context
-            final WebContext context = new VertxWebContext(req);
+        // get the client from its type
+        final BaseClient client = (BaseClient) clientsGroup.findClient(webContext);
+        logger.debug("client : {}", client);
 
-            // get the client from its type
-            final BaseClient client = (BaseClient) clientsGroup.findClient(context);
-            logger.debug("client : {}", client);
-
-            // get credentials
-            Credentials credentials = null;
-            try {
-                credentials = client.getCredentials(context);
-                logger.debug("credentials : {}", credentials);
-            } catch (final RequiresHttpAction e) {
-                // requires some specific HTTP action
-                logger.debug("requires HTTP action : {}", e.getCode());
-                if (e.getCode() == HttpConstants.OK) {
-                    req.response().headers().add("Content-Type", Constants.HTML_CONTENT_TYPE);
-                }
-                // eventually end response
-                req.response().end();
-                return;
+        // get credentials
+        Credentials credentials = null;
+        try {
+            credentials = client.getCredentials(webContext);
+            logger.debug("credentials : {}", credentials);
+        } catch (final RequiresHttpAction e) {
+            // requires some specific HTTP action
+            logger.debug("requires HTTP action : {}", e.getCode());
+            if (e.getCode() == HttpConstants.OK) {
+                req.response().headers().add("Content-Type", Constants.HTML_CONTENT_TYPE);
             }
-
-            // get user profile
-            final CommonProfile profile = client.getUserProfile(credentials, context);
-            logger.debug("profile : {}", profile);
-
-            // get or create sessionId
-            final String sessionId = StorageHelper.getOrCreateSessionId(req);
-
-            // save user profile only if it's not null
-            if (profile != null) {
-                StorageHelper.saveProfile(sessionId, profile);
-            }
-
-            // get requested url
-            final String requestedUrl = StorageHelper.getRequestedUrl(sessionId);
-            final String redirectUrl = defaultUrl(requestedUrl, Config.getDefaultSuccessUrl());
-            StorageHelper.saveRequestedUrl(sessionId, null);
-
-            // retrieve saved request and redirect
-            HttpResponseHelper.redirect(req, redirectUrl);
-
-        }
-    };
-
-    @Override
-    public void handleInternal(final HttpServerRequest req) {
-        String contentType = req.headers().get(Constants.CONTENT_TYPE_HEADER);
-        if ("POST".equals(req.method()) && contentType != null
-                && Constants.FORM_URLENCODED_CONTENT_TYPE.equals(contentType)) {
-            req.expectMultiPart(true);
-            req.params().add(Constants.FORM_ATTRIBUTES, "true");
-            req.endHandler(new Handler<Void>() {
+            // eventually end response
+            writeSessionAttribute(webContext, new Handler<JsonObject>() {
                 @Override
-                public void handle(Void event) {
-                    handler.handle(req);
+                public void handle(JsonObject event) {
+                    req.response().end();
                 }
             });
-        } else {
-            handler.handle(req);
+            return;
         }
+
+        // get user profile
+        final CommonProfile profile = client.getUserProfile(credentials, webContext);
+        logger.debug("profile : {}", profile);
+
+        // save user profile only if it's not null
+        if (profile != null) {
+            webContext.setSessionAttribute(Constants.USER_PROFILE, profile);
+        }
+
+        final String requestedUrl = (String) webContext.getSessionAttribute(Constants.REQUESTED_URL);
+        webContext.setSessionAttribute(Constants.REQUESTED_URL, null);
+
+        final String redirectUrl = defaultUrl(requestedUrl, Config.getDefaultSuccessUrl());
+
+        writeSessionAttribute(webContext, new Handler<JsonObject>() {
+            @Override
+            public void handle(JsonObject event) {
+                HttpResponseHelper.redirect(req, redirectUrl);
+            }
+        });
+
     }
 
     /**
