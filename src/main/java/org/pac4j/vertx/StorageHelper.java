@@ -1,3 +1,18 @@
+/*
+  Copyright 2014 - 2014 Michael Remond
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package org.pac4j.vertx;
 
 import io.netty.handler.codec.http.Cookie;
@@ -9,10 +24,20 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.commons.lang3.StringUtils;
 import org.pac4j.core.profile.CommonProfile;
 import org.vertx.java.core.http.HttpServerRequest;
 
+/**
+ * Helper class to save and retrieve information like session attribute or saved request url during
+ * the authentication process.
+ * 
+ * This class currently relies on a simple map for saving objects and there's no expiration mechanisms.
+ * Future implementation should use Vert.x session module. 
+ * 
+ * @author Michael Remond
+ * @since 1.0.0
+ *
+ */
 public final class StorageHelper {
 
     private static ConcurrentMap<String, Object> map = new ConcurrentHashMap<>();
@@ -156,7 +181,7 @@ public final class StorageHelper {
      * @return the object
      */
     public static Object get(final String key) {
-        return map.get(getCacheKey(key));
+        return map.get(key);
     }
 
     /**
@@ -168,9 +193,9 @@ public final class StorageHelper {
      */
     public static void save(final String key, final Object value, final int timeout) {
         if (value == null) {
-            map.remove(getCacheKey(key));
+            map.remove(key);
         } else {
-            map.put(getCacheKey(key), value);
+            map.put(key, value);
         }
     }
 
@@ -180,10 +205,7 @@ public final class StorageHelper {
      * @param key
      */
     public static void remove(final String key) {
-        map.remove(getCacheKey(key));
+        map.remove(key);
     }
 
-    static String getCacheKey(final String key) {
-        return (StringUtils.isNotBlank(Config.getCacheKeyPrefix())) ? Config.getCacheKeyPrefix() + ":" + key : key;
-    }
 }

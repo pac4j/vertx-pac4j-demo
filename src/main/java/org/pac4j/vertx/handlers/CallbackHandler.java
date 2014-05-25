@@ -1,3 +1,18 @@
+/*
+  Copyright 2014 - 2014 Michael Remond
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package org.pac4j.vertx.handlers;
 
 import org.apache.commons.lang3.StringUtils;
@@ -18,11 +33,25 @@ import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 
+/**
+ * Callback handler for Vert.x pac4j binding. This handler finishes the authentication process.
+ * <br>
+ * This handler is in two parts:
+ * <ul>
+ * <li>the real handler which is called either directly if there's no data in the request (e.g. GET)
+ *  or by the request endHanlder otherwise (e.g. POST)</li>
+ *  <li>the handler which makes the decision based on the HTTP method and the Content-Type header</li>
+ *  </ul>
+ * 
+ * @author Michael Remond
+ * @since 1.0.0
+ *
+ */
 public class CallbackHandler extends HttpSafeHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(CallbackHandler.class);
 
-    private HttpSafeHandler handler = new HttpSafeHandler() {
+    private final HttpSafeHandler handler = new HttpSafeHandler() {
 
         @SuppressWarnings({ "rawtypes", "unchecked" })
         @Override
@@ -78,9 +107,9 @@ public class CallbackHandler extends HttpSafeHandler {
 
     @Override
     public void handleInternal(final HttpServerRequest req) {
-        String contentType = req.headers().get("Content-Type");
+        String contentType = req.headers().get(Constants.CONTENT_TYPE_HEADER);
         if ("POST".equals(req.method()) && contentType != null
-                && "application/x-www-form-urlencoded".equals(contentType)) {
+                && Constants.FORM_URLENCODED_CONTENT_TYPE.equals(contentType)) {
             req.expectMultiPart(true);
             req.params().add(Constants.FORM_ATTRIBUTES, "true");
             req.endHandler(new Handler<Void>() {
