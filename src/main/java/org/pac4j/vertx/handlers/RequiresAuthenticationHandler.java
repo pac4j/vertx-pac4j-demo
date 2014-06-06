@@ -15,24 +15,19 @@
  */
 package org.pac4j.vertx.handlers;
 
-import org.pac4j.core.client.BaseClient;
-import org.pac4j.core.client.RedirectAction;
-import org.pac4j.core.context.HttpConstants;
-import org.pac4j.core.exception.RequiresHttpAction;
-import org.pac4j.core.exception.TechnicalException;
-import org.pac4j.vertx.Config;
-import org.pac4j.vertx.HttpResponseHelper;
-import org.pac4j.vertx.VertxWebContext;
+import org.pac4j.vertx.Constants;
+import org.pac4j.vertx.Pac4jHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
 import com.campudus.vertx.sessionmanager.java.SessionHelper;
 
 /**
- * Wrapper handler acting as security barrier. If the user is authenticated, the next handler in chain is called.
+ * Wrapper handler acting as security barrier. If the user is authenticated, the next handler in the chain is called.
  * Otherwise the user is redirected to the pac4j client security provider.
  * 
  *  The pac4j client to use is selected with the clientName attributes. 
@@ -51,68 +46,48 @@ public class RequiresAuthenticationHandler extends SessionAwareHandler {
 
     private final Handler<HttpServerRequest> delegate;
 
+    private final Pac4jHelper pac4jHelper;
+
     public RequiresAuthenticationHandler(String clientName, Handler<HttpServerRequest> delegate,
-            SessionHelper sessionHelper) {
-        this(clientName, false, delegate, sessionHelper);
+            Pac4jHelper pac4jHelper, SessionHelper sessionHelper) {
+        this(clientName, false, delegate, pac4jHelper, sessionHelper);
     }
 
     public RequiresAuthenticationHandler(String clientName, boolean isAjax, Handler<HttpServerRequest> delegate,
-            SessionHelper sessionHelper) {
+            Pac4jHelper pac4jHelper, SessionHelper sessionHelper) {
         super(sessionHelper);
+        this.pac4jHelper = pac4jHelper;
         this.clientName = clientName;
         this.delegate = delegate;
         this.isAjax = isAjax;
     }
 
-    protected void doHandle(final HttpServerRequest req, final VertxWebContext webContext) {
-        if (webContext.getSessionAttribute("pac4jUserProfile") != null) {
+    protected void doHandle(final HttpServerRequest req, final String sessionId, final JsonObject sessionAttributes) {
+        if (sessionAttributes.getValue(Constants.USER_PROFILE) != null) {
             delegate.handle(req);
         } else {
-            final String requestedUrlToSave = webContext.getFullRequestURL();
-            webContext.setSessionAttribute("requestedUrlToSave", requestedUrlToSave);
+            final String requestedUrlToSave = pac4jHelper.getFullRequestURL(req);
+            sessionAttributes.putString(Constants.REQUESTED_URL, requestedUrlToSave);
             logger.debug("requestedUrlToSave : {}", requestedUrlToSave);
 
-            // get client
-            final BaseClient client = (BaseClient) Config.getClients().findClient(clientName);
-            logger.debug("client : {}", client);
-            try {
-                final RedirectAction action = client.getRedirectAction(webContext, true, isAjax);
+            pac4jHelper.redirect(req, sessionAttributes, clientName, true, isAjax, new Handler<Message<JsonObject>>() {
 
-                writeSessionAttribute(webContext, new Handler<JsonObject>() {
-                    @Override
-                    public void handle(JsonObject event) {
-                        doRedirect(req, action);
-                    }
-                });
-            } catch (final RequiresHttpAction e) {
-                // requires some specific HTTP action
-                final int code = e.getCode();
-                logger.debug("requires HTTP action : {}", code);
-                if (code == HttpConstants.UNAUTHORIZED) {
-                    HttpResponseHelper.unauthorized(req, Config.getErrorPage401());
-                } else if (code == HttpConstants.FORBIDDEN) {
-                    HttpResponseHelper.forbidden(req, Config.getErrorPage403());
-                } else {
-                    final String message = "Unsupported HTTP action : " + code;
-                    logger.error(message);
-                    throw new TechnicalException(message);
+                @Override
+                public void handle(final Message<JsonObject> msg) {
+                    final JsonObject response = msg.body();
+                    JsonObject sessionAttributes = pac4jHelper.getSessionAttributes(response);
+
+                    saveSessionAttributes(sessionId, sessionAttributes, new Handler<JsonObject>() {
+                        @Override
+                        public void handle(JsonObject event) {
+                            pac4jHelper.sendResponse(req.response(), response);
+                        }
+                    });
                 }
-            }
+            });
+
         }
 
-    }
-
-    private void doRedirect(HttpServerRequest req, RedirectAction action) {
-        switch (action.getType()) {
-        case REDIRECT:
-            HttpResponseHelper.redirect(req, action.getLocation());
-            break;
-        case SUCCESS:
-            HttpResponseHelper.ok(req, action.getContent());
-            break;
-        default:
-            throw new TechnicalException("Invalid redirect action type");
-        }
     }
 
 }

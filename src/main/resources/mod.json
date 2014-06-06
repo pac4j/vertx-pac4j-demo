@@ -1,9 +1,7 @@
 {
 
   // Java verticle
-  "main":"org.pac4j.vertx.Pac4jVerticle",
-  "worker": true,
-  "includes":"com.campudus~session-manager~2.0.1-final",
+  "main":"org.pac4j.vertx.Pac4jDemoVerticle",
 
   // If your module is going to be registered in the Vert.x module registry you will also need the following
   // mandatory fields
