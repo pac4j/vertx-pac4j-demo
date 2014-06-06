@@ -19,7 +19,7 @@ import org.pac4j.core.context.HttpConstants;
 import org.vertx.java.core.http.HttpServerRequest;
 
 /**
- * Helper class to generate some basic http responses. 
+ * Helper class to generate some basic http responses.
  * 
  * @author Michael Remond
  * @since 1.0.0
@@ -29,7 +29,7 @@ public class HttpResponseHelper {
 
     public static void ok(HttpServerRequest req, String content) {
         req.response().setStatusCode(HttpConstants.OK);
-        req.response().headers().add("Content-Type", Constants.HTML_CONTENT_TYPE);
+        req.response().headers().add(Constants.CONTENT_TYPE_HEADER, Constants.HTML_CONTENT_TYPE);
         req.response().end(content);
     }
 

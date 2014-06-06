@@ -16,22 +16,18 @@
 package org.pac4j.vertx.handlers;
 
 import org.apache.commons.lang3.StringUtils;
-import org.pac4j.core.client.BaseClient;
-import org.pac4j.core.client.Clients;
-import org.pac4j.core.context.HttpConstants;
-import org.pac4j.core.context.WebContext;
-import org.pac4j.core.credentials.Credentials;
-import org.pac4j.core.exception.RequiresHttpAction;
-import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.vertx.Config;
 import org.pac4j.vertx.Constants;
 import org.pac4j.vertx.HttpResponseHelper;
-import org.pac4j.vertx.StorageHelper;
-import org.pac4j.vertx.VertxWebContext;
+import org.pac4j.vertx.Pac4jHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
+
+import com.campudus.vertx.sessionmanager.java.SessionHelper;
 
 /**
  * Callback handler for Vert.x pac4j binding. This handler finishes the authentication process.
@@ -47,66 +43,18 @@ import org.vertx.java.core.http.HttpServerRequest;
  * @since 1.0.0
  *
  */
-public class CallbackHandler extends HttpSafeHandler {
+public class CallbackHandler implements Handler<HttpServerRequest> {
 
     protected static final Logger logger = LoggerFactory.getLogger(CallbackHandler.class);
 
-    private final HttpSafeHandler handler = new HttpSafeHandler() {
+    private Handler<HttpServerRequest> handler;
 
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        @Override
-        public void handleInternal(HttpServerRequest req) {
-            // clients group from config
-            final Clients clientsGroup = Config.getClients();
+    public CallbackHandler(Pac4jHelper pac4jHelper, SessionHelper sessionHelper) {
+        this.handler = new CBHandler(pac4jHelper, sessionHelper);
+    }
 
-            // web context
-            final WebContext context = new VertxWebContext(req);
-
-            // get the client from its type
-            final BaseClient client = (BaseClient) clientsGroup.findClient(context);
-            logger.debug("client : {}", client);
-
-            // get credentials
-            Credentials credentials = null;
-            try {
-                credentials = client.getCredentials(context);
-                logger.debug("credentials : {}", credentials);
-            } catch (final RequiresHttpAction e) {
-                // requires some specific HTTP action
-                logger.debug("requires HTTP action : {}", e.getCode());
-                if (e.getCode() == HttpConstants.OK) {
-                    req.response().headers().add("Content-Type", Constants.HTML_CONTENT_TYPE);
-                }
-                // eventually end response
-                req.response().end();
-                return;
-            }
-
-            // get user profile
-            final CommonProfile profile = client.getUserProfile(credentials, context);
-            logger.debug("profile : {}", profile);
-
-            // get or create sessionId
-            final String sessionId = StorageHelper.getOrCreateSessionId(req);
-
-            // save user profile only if it's not null
-            if (profile != null) {
-                StorageHelper.saveProfile(sessionId, profile);
-            }
-
-            // get requested url
-            final String requestedUrl = StorageHelper.getRequestedUrl(sessionId);
-            final String redirectUrl = defaultUrl(requestedUrl, Config.getDefaultSuccessUrl());
-            StorageHelper.saveRequestedUrl(sessionId, null);
-
-            // retrieve saved request and redirect
-            HttpResponseHelper.redirect(req, redirectUrl);
-
-        }
-    };
-
-    @Override
-    public void handleInternal(final HttpServerRequest req) {
+    public void handle(final HttpServerRequest req) {
+        // get form urlencoded data
         String contentType = req.headers().get(Constants.CONTENT_TYPE_HEADER);
         if ("POST".equals(req.method()) && contentType != null
                 && Constants.FORM_URLENCODED_CONTENT_TYPE.equals(contentType)) {
@@ -120,6 +68,50 @@ public class CallbackHandler extends HttpSafeHandler {
             });
         } else {
             handler.handle(req);
+        }
+    }
+
+    private static class CBHandler extends SessionAwareHandler {
+
+        private Pac4jHelper pac4jHelper;
+
+        public CBHandler(Pac4jHelper pac4jHelper, SessionHelper sessionHelper) {
+            super(sessionHelper);
+            this.pac4jHelper = pac4jHelper;
+        }
+
+        @Override
+        protected void doHandle(final HttpServerRequest req, final String sessionId, final JsonObject sessionAttributes) {
+            this.pac4jHelper.authenticate(req, sessionAttributes, new Handler<Message<JsonObject>>() {
+
+                @Override
+                public void handle(final Message<JsonObject> msg) {
+                    final JsonObject response = msg.body();
+                    Object userProfile = pac4jHelper.getUserProfile(response);
+                    JsonObject sessionAttributes = pac4jHelper.getSessionAttributes(response);
+
+                    if (userProfile == null) {
+                        saveSessionAttributes(sessionId, sessionAttributes, new Handler<JsonObject>() {
+                            @Override
+                            public void handle(JsonObject event) {
+                                pac4jHelper.sendResponse(req.response(), response);
+                            }
+                        });
+                    } else {
+                        sessionAttributes.putValue(Constants.USER_PROFILE, userProfile);
+                        final String requestedUrl = sessionAttributes.getString(Constants.REQUESTED_URL);
+                        sessionAttributes.putString(Constants.REQUESTED_URL, null);
+                        final String redirectUrl = defaultUrl(requestedUrl, Config.getDefaultSuccessUrl());
+
+                        saveSessionAttributes(sessionId, sessionAttributes, new Handler<JsonObject>() {
+                            @Override
+                            public void handle(JsonObject event) {
+                                HttpResponseHelper.redirect(req, redirectUrl);
+                            }
+                        });
+                    }
+                }
+            });
         }
     }
 

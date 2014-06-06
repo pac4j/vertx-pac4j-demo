@@ -32,12 +32,6 @@ public final class Config {
 
     private static String defaultLogoutUrl = DEFAULT_URL;
 
-    // 1 hour = 3600 seconds
-    private static int profileTimeout = 3600;
-
-    // 1 minute = 60 second
-    private static int sessionTimeout = 60;
-
     // all the clients
     private static Clients clients;
 
@@ -59,22 +53,6 @@ public final class Config {
 
     public static void setDefaultLogoutUrl(final String defaultLogoutUrl) {
         Config.defaultLogoutUrl = defaultLogoutUrl;
-    }
-
-    public static int getProfileTimeout() {
-        return profileTimeout;
-    }
-
-    public static void setProfileTimeout(final int profileTimeout) {
-        Config.profileTimeout = profileTimeout;
-    }
-
-    public static int getSessionTimeout() {
-        return sessionTimeout;
-    }
-
-    public static void setSessionTimeout(final int sessionTimeout) {
-        Config.sessionTimeout = sessionTimeout;
     }
 
     public static Clients getClients() {

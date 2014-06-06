@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.pac4j.core.context.WebContext;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.HttpServerResponse;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * WebContext implementation for Vert.x.
@@ -31,105 +31,126 @@ import org.vertx.java.core.http.HttpServerResponse;
  */
 public class VertxWebContext implements WebContext {
 
-    private final HttpServerRequest request;
+    private final JsonObject sessionAttributes;
+    private String method;
+    private String serverName;
+    private int serverPort;
+    private String fullUrl;
+    private String scheme;
+    private JsonObject headers;
+    private JsonObject parameters;
+    private Map<String, String[]> mapParameters;
 
-    private final HttpServerResponse response;
+    private JsonObject outHeaders = new JsonObject();
+    private StringBuilder sb = new StringBuilder();
+    private int code;
 
-    public VertxWebContext(HttpServerRequest request) {
-        this.request = request;
-        this.response = request.response();
+    public VertxWebContext(String method, String serverName, int serverPort, String fullUrl, String scheme,
+            JsonObject headers, JsonObject parameters, JsonObject sessionAttributes) {
+        this.method = method;
+        this.serverName = serverName;
+        this.serverPort = serverPort;
+        this.fullUrl = fullUrl;
+        this.scheme = scheme;
+        this.headers = headers;
+        this.parameters = parameters;
+        this.sessionAttributes = sessionAttributes;
+        mapParameters = new HashMap<>();
+        for (String name : parameters.getFieldNames()) {
+            JsonArray params = parameters.getArray(name);
+            String[] values = new String[params.size()];
+            int i = 0;
+            for (Object o : params) {
+                values[i++] = (String) o;
+            }
+            mapParameters.put(name, values);
+        }
+
     }
 
     @Override
     public String getRequestParameter(String name) {
-        String param = request.params().get(name);
-        if (param == null & request.params().get(Constants.FORM_ATTRIBUTES) != null) {
-            param = request.formAttributes().get(name);
-            if (param != null) {
-                // FIX for Vert.x
-                param = param.replaceAll("\\s", "+");
-            }
+        JsonArray values = parameters.getArray(name);
+        if (values != null && values.size() > 0) {
+            return values.get(0);
         }
-        return param;
+        return null;
     }
 
     @Override
     public Map<String, String[]> getRequestParameters() {
-        final Map<String, String[]> map = new HashMap<>();
-        if (request.params().get(Constants.FORM_ATTRIBUTES) != null) {
-            for (String name : request.formAttributes().names()) {
-                map.put(name, request.formAttributes().getAll(name).toArray(new String[0]));
-            }
-        }
-        for (String name : request.params().names()) {
-            map.put(name, request.params().getAll(name).toArray(new String[0]));
-        }
-        return map;
+        return mapParameters;
     }
 
     @Override
     public String getRequestHeader(String name) {
-        return request.headers().get(name);
+        return headers.getString(name);
     }
 
     @Override
     public void setSessionAttribute(String name, Object value) {
-        String sessionId = StorageHelper.getOrCreateSessionId(request);
-        StorageHelper.save(sessionId, name, value);
+        sessionAttributes.putValue(name, EventBusObjectConverter.encode(value));
     }
 
     @Override
     public Object getSessionAttribute(String name) {
-        String sessionId = StorageHelper.getOrCreateSessionId(request);
-        return StorageHelper.get(sessionId, name);
+        return EventBusObjectConverter.decode(sessionAttributes.getValue(name));
+    }
+
+    public JsonObject getSessionAttributes() {
+        return sessionAttributes;
     }
 
     @Override
     public String getRequestMethod() {
-        return request.method();
+        return method;
     }
 
     @Override
     public void writeResponseContent(String content) {
-        response.end(content);
+        sb.append(content);
+    }
+
+    public String getResponseContent() {
+        return sb.toString();
     }
 
     @Override
     public void setResponseStatus(int code) {
-        response.setStatusCode(code);
+        this.code = code;
+    }
+
+    public int getResponseStatus() {
+        return code;
     }
 
     @Override
     public void setResponseHeader(String name, String value) {
-        response.headers().set(name, value);
+        outHeaders.putString(name, value);
+    }
+
+    public JsonObject getResponseHeaders() {
+        return outHeaders;
     }
 
     @Override
     public String getServerName() {
-        return getRequestHeader(Constants.HOST_HEADER).split(":")[0];
+        return serverName;
     }
 
     @Override
     public int getServerPort() {
-        String[] tab = getRequestHeader(Constants.HOST_HEADER).split(":");
-        if (tab.length > 1) {
-            return Integer.parseInt(tab[1]);
-        }
-        if ("http".equals(getScheme())) {
-            return 80;
-        } else {
-            return 443;
-        }
+        return serverPort;
     }
 
     @Override
     public String getScheme() {
-        return request.absoluteURI().getScheme();
+        return scheme;
     }
 
     @Override
     public String getFullRequestURL() {
-        return getScheme() + "://" + getRequestHeader(Constants.HOST_HEADER) + request.uri();
+        return fullUrl;
     }
 
 }

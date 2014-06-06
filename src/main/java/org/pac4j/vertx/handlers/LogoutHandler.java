@@ -16,9 +16,13 @@
 package org.pac4j.vertx.handlers;
 
 import org.pac4j.vertx.Config;
+import org.pac4j.vertx.Constants;
 import org.pac4j.vertx.HttpResponseHelper;
-import org.pac4j.vertx.StorageHelper;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
+
+import com.campudus.vertx.sessionmanager.java.SessionHelper;
 
 /**
  * Logout handler which remove the user profile from the session.
@@ -27,13 +31,22 @@ import org.vertx.java.core.http.HttpServerRequest;
  * @since 1.0.0
  *
  */
-public class LogoutHandler extends HttpSafeHandler {
+public class LogoutHandler extends SessionAwareHandler {
+
+    public LogoutHandler(SessionHelper sessionHelper) {
+        super(sessionHelper);
+    }
 
     @Override
-    protected void handleInternal(HttpServerRequest req) {
-        String sessionId = StorageHelper.getOrCreateSessionId(req);
-        StorageHelper.saveProfile(sessionId, null);
-        HttpResponseHelper.redirect(req, Config.getDefaultLogoutUrl());
+    protected void doHandle(final HttpServerRequest req, final String sessionId, final JsonObject sessionAttributes) {
+        sessionAttributes.putValue(Constants.USER_PROFILE, null);
+
+        saveSessionAttributes(sessionId, sessionAttributes, new Handler<JsonObject>() {
+            @Override
+            public void handle(JsonObject event) {
+                HttpResponseHelper.redirect(req, Config.getDefaultLogoutUrl());
+            }
+        });
     }
 
 }

@@ -1,8 +1,7 @@
 {
 
   // Java verticle
-  "main":"org.pac4j.vertx.Pac4jVerticle",
-  "worker": true,
+  "main":"org.pac4j.vertx.Pac4jDemoVerticle",
 
   // If your module is going to be registered in the Vert.x module registry you will also need the following
   // mandatory fields
