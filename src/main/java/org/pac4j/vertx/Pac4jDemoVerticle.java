@@ -22,7 +22,6 @@ import org.pac4j.vertx.handlers.RequiresAuthenticationHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Verticle;
 
 import com.campudus.vertx.sessionmanager.java.SessionHelper;
@@ -40,8 +39,9 @@ public class Pac4jDemoVerticle extends Verticle {
     @Override
     public void start() {
 
-        container.deployModule("com.campudus~session-manager~2.0.1-final", new JsonObject());
-        container.deployWorkerVerticle("org.pac4j.vertx.Pac4jManager", new JsonObject());
+        container.deployModule("com.campudus~session-manager~2.0.1-final",
+                container.config().getObject("sessionManager"));
+        container.deployModule("org.pac4j~vertx-pac4j~1.0-SNAPSHOT", container.config().getObject("pac4jManager"));
 
         SessionHelper sessionHelper = new SessionHelper(vertx);
         Pac4jHelper pac4jHelper = new Pac4jHelper(vertx);

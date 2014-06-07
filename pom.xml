@@ -71,6 +71,11 @@
     <!-- Pac4j -->
     <dependency>
         <groupId>org.pac4j</groupId>
+        <artifactId>vertx-pac4j</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+        <groupId>org.pac4j</groupId>
         <artifactId>pac4j-oauth</artifactId>
         <version>${pac4j.version}</version>
     </dependency>
@@ -159,14 +164,13 @@
         <groupId>io.vertx</groupId>
         <artifactId>vertx-maven-plugin</artifactId>
         <version>${maven.vertx.plugin.version}</version>
-        <!--
-        You can specify extra config to the plugin as required here
+        
         <configuration>
-           <configFile>/path/to/MyVerticle.conf</configFile>
+           <configFile>src/main/resources/config_demo.json</configFile>
            <instances>1</instances>
-           <classpath>src/main/resources/:src/test/resources/:target/classes/:target/test-classes/</classpath>
+           <!-- classpath>src/main/resources/:src/test/resources/:target/classes/:target/test-classes/</classpath -->
         </configuration>
-        -->
+        
         <!-- Make sure that the plugin uses the vert.x versions from this pom.xml not from its own pom.xml -->
         <dependencies>
           <dependency>
