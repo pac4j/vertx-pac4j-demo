@@ -1,10 +1,12 @@
 vertx-pac4j-demo
 ================
 
-To build the demo, first run:
+To build the demo, you first need to install in your local repository the [vertx-pac4j binding](https://github.com/pac4j/vertx-pac4j).
+
+After, just run in this demo project:
 <pre><code>mvn install</code></pre>
 
-After you can run the module from maven with:
+You can then run the module from maven with:
 <pre><code>mvn vertx:runMod</code></pre>
 
 Or if you have vert.x installed, run the module from the repository:
