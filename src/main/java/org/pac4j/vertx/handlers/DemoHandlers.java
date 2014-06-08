@@ -36,7 +36,7 @@ public class DemoHandlers {
 
     public static class IndexHandler extends SessionAwareHandler {
 
-        private Pac4jHelper pac4jHelper;
+        private final Pac4jHelper pac4jHelper;
 
         public IndexHandler(Pac4jHelper pac4jHelper, SessionHelper sessionHelper) {
             super(sessionHelper);
@@ -54,6 +54,7 @@ public class DemoHandlers {
                         public void handle(Message<JsonObject> event) {
                             JsonObject response = event.body();
                             JsonObject attributes = pac4jHelper.getSessionAttributes(response);
+                            attributes.putString(Constants.REQUESTED_URL, null);
 
                             final StringBuilder sb = new StringBuilder();
                             sb.append("<h1>index</h1>");
