@@ -16,7 +16,8 @@
 					"class": "org.pac4j.oauth.client.TwitterClient",
 					"props": {
 						"key": "CoxUiYwQOSFDReZYdjigBA",
-						"secret": "2kAzunH5Btc4gRSaMr7D7MkyoJ5u1VzbOOzE8rBofs"
+						"secret": "2kAzunH5Btc4gRSaMr7D7MkyoJ5u1VzbOOzE8rBofs",
+						"connectTimeout": 2000
 					}
 				},
 				"form": {
