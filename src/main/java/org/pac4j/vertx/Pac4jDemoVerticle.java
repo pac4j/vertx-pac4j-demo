@@ -41,7 +41,8 @@ public class Pac4jDemoVerticle extends Verticle {
 
         container.deployModule("com.campudus~session-manager~2.0.1-final",
                 container.config().getObject("sessionManager"));
-        container.deployModule("org.pac4j~vertx-pac4j~1.0-SNAPSHOT", container.config().getObject("pac4jManager"));
+        container.deployModule("org.pac4j~vertx-pac4j-module~1.0-SNAPSHOT", container.config()
+                .getObject("pac4jManager"));
 
         SessionHelper sessionHelper = new SessionHelper(vertx);
         Pac4jHelper pac4jHelper = new Pac4jHelper(vertx);

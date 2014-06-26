@@ -71,7 +71,7 @@
     <!-- Pac4j -->
     <dependency>
         <groupId>org.pac4j</groupId>
-        <artifactId>vertx-pac4j</artifactId>
+        <artifactId>vertx-pac4j-helper</artifactId>
         <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
