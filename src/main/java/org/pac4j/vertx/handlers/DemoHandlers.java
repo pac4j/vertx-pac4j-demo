@@ -15,7 +15,7 @@
  */
 package org.pac4j.vertx.handlers;
 
-import org.pac4j.vertx.Constants;
+import org.pac4j.core.context.HttpConstants;
 import org.pac4j.vertx.HttpResponseHelper;
 import org.pac4j.vertx.Pac4jHelper;
 import org.vertx.java.core.Handler;
@@ -54,7 +54,7 @@ public class DemoHandlers {
                         public void handle(Message<JsonObject> event) {
                             JsonObject response = event.body();
                             JsonObject attributes = pac4jHelper.getSessionAttributes(response);
-                            attributes.putString(Constants.REQUESTED_URL, null);
+                            attributes.putString(HttpConstants.REQUESTED_URL, null);
 
                             final StringBuilder sb = new StringBuilder();
                             sb.append("<h1>index</h1>");
@@ -69,7 +69,7 @@ public class DemoHandlers {
                             sb.append("<a href=\"logout\">logout</a>");
                             sb.append("<br /><br />");
                             sb.append("profile : ");
-                            sb.append(attributes.getValue(Constants.USER_PROFILE));
+                            sb.append(attributes.getValue(HttpConstants.USER_PROFILE));
                             sb.append("<br /><br />");
                             sb.append("<hr />");
                             sb.append("<a href=\"").append(response.getString("FacebookClient"))
@@ -115,7 +115,7 @@ public class DemoHandlers {
             sb.append("<a href=\"..\">Back</a><br />");
             sb.append("<br /><br />");
             sb.append("profile : ");
-            sb.append(sessionAttributes.getValue(Constants.USER_PROFILE));
+            sb.append(sessionAttributes.getValue(HttpConstants.USER_PROFILE));
             sb.append("<br />");
             HttpResponseHelper.ok(req, sb.toString());
         }
@@ -130,7 +130,7 @@ public class DemoHandlers {
         @Override
         protected void doHandle(final HttpServerRequest req, final String sessionId, final JsonObject sessionAttributes) {
             req.response().headers().add("Content-Type", "application/json");
-            HttpResponseHelper.ok(req, sessionAttributes.getValue(Constants.USER_PROFILE).toString());
+            HttpResponseHelper.ok(req, sessionAttributes.getValue(HttpConstants.USER_PROFILE).toString());
         }
     };
 
