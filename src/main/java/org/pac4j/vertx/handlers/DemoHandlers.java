@@ -1,5 +1,5 @@
 /*
-  Copyright 2014 - 2014 Michael Remond
+  Copyright 2014 - 2014 pac4j organization
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.pac4j.vertx.handlers;
 
 import org.pac4j.core.context.HttpConstants;
+import org.pac4j.core.profile.UserProfile;
+import org.pac4j.vertx.AuthHttpServerRequest;
 import org.pac4j.vertx.HttpResponseHelper;
 import org.pac4j.vertx.Pac4jHelper;
 import org.vertx.java.core.Handler;
@@ -69,7 +71,7 @@ public class DemoHandlers {
                             sb.append("<a href=\"logout\">logout</a>");
                             sb.append("<br /><br />");
                             sb.append("profile : ");
-                            sb.append(attributes.getValue(HttpConstants.USER_PROFILE));
+                            sb.append(pac4jHelper.getUserProfileFromSession(attributes));
                             sb.append("<br /><br />");
                             sb.append("<hr />");
                             sb.append("<a href=\"").append(response.getString("FacebookClient"))
@@ -102,35 +104,28 @@ public class DemoHandlers {
         }
     };
 
-    public static class AuthenticatedHandler extends SessionAwareHandler {
-
-        public AuthenticatedHandler(SessionHelper sessionHelper) {
-            super(sessionHelper);
-        }
+    public static class AuthenticatedHandler implements Handler<HttpServerRequest> {
 
         @Override
-        protected void doHandle(final HttpServerRequest req, final String sessionId, final JsonObject sessionAttributes) {
+        public void handle(HttpServerRequest req) {
             StringBuilder sb = new StringBuilder();
             sb.append("<h1>protected area</h1>");
             sb.append("<a href=\"..\">Back</a><br />");
             sb.append("<br /><br />");
             sb.append("profile : ");
-            sb.append(sessionAttributes.getValue(HttpConstants.USER_PROFILE));
+            sb.append(((AuthHttpServerRequest) req).getProfile());
             sb.append("<br />");
             HttpResponseHelper.ok(req, sb.toString());
         }
     };
 
-    public static class AuthenticatedJsonHandler extends SessionAwareHandler {
-
-        public AuthenticatedJsonHandler(SessionHelper sessionHelper) {
-            super(sessionHelper);
-        }
+    public static class AuthenticatedJsonHandler implements Handler<HttpServerRequest> {
 
         @Override
-        protected void doHandle(final HttpServerRequest req, final String sessionId, final JsonObject sessionAttributes) {
+        public void handle(final HttpServerRequest req) {
             req.response().headers().add("Content-Type", "application/json");
-            HttpResponseHelper.ok(req, sessionAttributes.getValue(HttpConstants.USER_PROFILE).toString());
+            UserProfile profile = ((AuthHttpServerRequest) req).getProfile();
+            HttpResponseHelper.ok(req, new JsonObject().putString("id", profile.getId()).toString());
         }
     };
 

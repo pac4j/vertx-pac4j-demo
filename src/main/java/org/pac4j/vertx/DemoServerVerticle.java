@@ -1,5 +1,5 @@
 /*
-  Copyright 2014 - 2014 Michael Remond
+  Copyright 2014 - 2014 pac4j organization
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,10 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
+
 package org.pac4j.vertx;
 
 import org.pac4j.vertx.handlers.CallbackHandler;
 import org.pac4j.vertx.handlers.DemoHandlers;
+import org.pac4j.vertx.handlers.HandlerHelper;
 import org.pac4j.vertx.handlers.LogoutHandler;
 import org.pac4j.vertx.handlers.RequiresAuthenticationHandler;
 import org.vertx.java.core.Handler;
@@ -27,28 +29,23 @@ import org.vertx.java.platform.Verticle;
 import com.campudus.vertx.sessionmanager.java.SessionHelper;
 
 /**
- * Vert.x pac4j demo verticle.<br><br>
- * This verticle requires the deployment of the session manager and pac4j manager modules.
+ * Stateful server example.
  * 
  * @author Michael Remond
  * @since 1.0.0
  *
  */
-public class Pac4jDemoVerticle extends Verticle {
+public class DemoServerVerticle extends Verticle {
 
     @Override
     public void start() {
-
-        container.deployModule("com.campudus~session-manager~2.0.1-final",
-                container.config().getObject("sessionManager"));
-        container.deployModule("org.pac4j~vertx-pac4j-module~1.0.0", container.config().getObject("pac4jManager"));
 
         SessionHelper sessionHelper = new SessionHelper(vertx);
         Pac4jHelper pac4jHelper = new Pac4jHelper(vertx);
 
         RouteMatcher rm = new RouteMatcher();
 
-        DemoHandlers.AuthenticatedHandler authenticatedHandler = new DemoHandlers.AuthenticatedHandler(sessionHelper);
+        DemoHandlers.AuthenticatedHandler authenticatedHandler = new DemoHandlers.AuthenticatedHandler();
         rm.get("/facebook/index.html", new RequiresAuthenticationHandler("FacebookClient", authenticatedHandler,
                 pac4jHelper, sessionHelper));
         rm.get("/twitter/index.html", new RequiresAuthenticationHandler("TwitterClient", authenticatedHandler,
@@ -56,7 +53,7 @@ public class Pac4jDemoVerticle extends Verticle {
         rm.get("/form/index.html", new RequiresAuthenticationHandler("FormClient", authenticatedHandler, pac4jHelper,
                 sessionHelper));
         rm.get("/form/index.html.json", new RequiresAuthenticationHandler("FormClient", true,
-                new DemoHandlers.AuthenticatedJsonHandler(sessionHelper), pac4jHelper, sessionHelper));
+                new DemoHandlers.AuthenticatedJsonHandler(), pac4jHelper, sessionHelper));
         rm.get("/basicauth/index.html", new RequiresAuthenticationHandler("BasicAuthClient", authenticatedHandler,
                 pac4jHelper, sessionHelper));
         rm.get("/cas/index.html", new RequiresAuthenticationHandler("CasClient", authenticatedHandler, pac4jHelper,
@@ -81,7 +78,7 @@ public class Pac4jDemoVerticle extends Verticle {
             }
         });
 
-        vertx.createHttpServer().requestHandler(rm).listen(8080, "localhost");
+        vertx.createHttpServer().requestHandler(HandlerHelper.addFormParsing(rm)).listen(8080, "localhost");
 
     }
 

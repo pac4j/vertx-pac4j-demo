@@ -36,7 +36,7 @@
     <mods.directory>target/mods</mods.directory>
 
     <!--Dependency versions-->
-    <pac4j.version>1.6.0</pac4j.version>
+    <pac4j.version>1.7.0-SNAPSHOT</pac4j.version>
     <vertx.version>2.1.5</vertx.version>
     <vertx.testtools.version>2.0.3-final</vertx.testtools.version>
     <junit.version>4.11</junit.version>
@@ -72,7 +72,7 @@
     <dependency>
         <groupId>org.pac4j</groupId>
         <artifactId>vertx-pac4j-helper</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
         <groupId>org.pac4j</groupId>
@@ -166,7 +166,7 @@
         <version>${maven.vertx.plugin.version}</version>
         
         <configuration>
-           <configFile>src/main/resources/config_demo.json</configFile>
+           <configFile>${vertx.configFile}</configFile>
            <instances>1</instances>
            <!-- classpath>src/main/resources/:src/test/resources/:target/classes/:target/test-classes/</classpath -->
         </configuration>
@@ -335,6 +335,25 @@
       </plugin>
     </plugins>
   </build>
+  
+  <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+            <vertx.configFile>src/main/resources/config_demo.json</vertx.configFile>
+            </properties>
+        </profile>
+        <profile>
+            <id>rest</id>
+            <properties>
+            <vertx.configFile>src/main/resources/config_rest_demo.json</vertx.configFile>
+            </properties>
+        </profile>
+  </profiles>
+  
   <reporting>
     <plugins>
       <plugin>
@@ -352,4 +371,5 @@
       </plugin>
     </plugins>
   </reporting>
+  
 </project>
