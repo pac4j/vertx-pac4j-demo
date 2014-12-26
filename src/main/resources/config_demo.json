@@ -24,17 +24,23 @@
 					"class": "org.pac4j.http.client.FormClient",
 					"props": {
 						"loginUrl": "http://localhost:8080/theForm.html",
-						"usernamePasswordAuthenticator": {
+						"authenticator": {
 							"class": "org.pac4j.http.credentials.SimpleTestUsernamePasswordAuthenticator"
+						},
+						"profileCreator": {
+						    "class": "org.pac4j.http.profile.UsernameProfileCreator"
 						}
 					}
 				},
 				"basicAuth": {
 					"class": "org.pac4j.http.client.BasicAuthClient",
 					"props": {
-						"usernamePasswordAuthenticator": {
-							"class": "org.pac4j.http.credentials.SimpleTestUsernamePasswordAuthenticator"
-						}
+						"authenticator": {
+                            "class": "org.pac4j.http.credentials.SimpleTestUsernamePasswordAuthenticator"
+                        },
+                        "profileCreator": {
+                            "class": "org.pac4j.http.profile.UsernameProfileCreator"
+                        }
 					}
 				},
 				"cas": {
