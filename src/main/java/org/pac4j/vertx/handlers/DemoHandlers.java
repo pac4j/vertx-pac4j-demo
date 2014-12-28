@@ -67,6 +67,7 @@ public class DemoHandlers {
                             sb.append("<a href=\"basicauth/index.html\">Protected url by basic auth : basicauth/index.html</a><br />");
                             sb.append("<a href=\"cas/index.html\">Protected url by CAS : cas/index.html</a><br />");
                             sb.append("<a href=\"saml2/index.html\">Protected url by SAML2 : saml2/index.html</a><br />");
+                            sb.append("<a href=\"oidc/index.html\">Protected url by OpenID Connect : oidc/index.html</a><br />");
                             sb.append("<br />");
                             sb.append("<a href=\"logout\">logout</a>");
                             sb.append("<br /><br />");
@@ -86,6 +87,8 @@ public class DemoHandlers {
                                     .append("\">Authenticate with CAS</a><br />");
                             sb.append("<a href=\"").append(response.getString("Saml2Client"))
                                     .append("\">Authenticate with SAML</a><br />");
+                            sb.append("<a href=\"").append(response.getString("OidcClient"))
+                                    .append("\">Authenticate with OpenID Connect</a><br />");
                             sb.append("<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js\"></script>");
                             sb.append("<script src=\"assets/js/app.js\"></script>");
 
@@ -99,7 +102,7 @@ public class DemoHandlers {
                         }
                     }, "FacebookClient", "FacebookClient", "TwitterClient", "FormClient", "BasicAuthClient",
                     "CasClient",
-                    "Saml2Client");
+                    "Saml2Client", "OidcClient");
 
         }
     };
