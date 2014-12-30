@@ -55,6 +55,11 @@ public class DemoHandlers {
                         @Override
                         public void handle(Message<JsonObject> event) {
                             JsonObject response = event.body();
+                            if (pac4jHelper.isErrorMessage(response)) {
+                                pac4jHelper.sendErrorResponse(req.response(), response);
+                                return;
+                            }
+
                             JsonObject attributes = pac4jHelper.getSessionAttributes(response);
                             attributes.putString(HttpConstants.REQUESTED_URL, null);
 
