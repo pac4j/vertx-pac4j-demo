@@ -57,6 +57,14 @@
 						"privateKeyPassword": "pac4j-demo-passwd",
 						"idpMetadataPath": "resource:testshib-providers.xml"
 					}
+				},
+				"oidc": {
+				    "class": "org.pac4j.oidc.client.OidcClient",
+				    "props": {
+				        "clientID": "343992089165-sp0l1km383i8cbm2j5nn20kbk5dk8hor.apps.googleusercontent.com",
+                        "secret": "uR3D8ej1kIRPbqAFaxIE3HWh",
+                        "discoveryURI": "https://accounts.google.com/.well-known/openid-configuration"
+				    }
 				}
 			}
 		}

@@ -60,6 +60,8 @@ public class DemoServerVerticle extends Verticle {
                 sessionHelper));
         rm.get("/saml2/index.html", new RequiresAuthenticationHandler("Saml2Client", authenticatedHandler, pac4jHelper,
                 sessionHelper));
+        rm.get("/oidc/index.html", new RequiresAuthenticationHandler("OidcClient", authenticatedHandler, pac4jHelper,
+                sessionHelper));
 
         rm.get("/theForm.html", DemoHandlers.formHandler);
 
