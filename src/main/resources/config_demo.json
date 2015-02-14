@@ -46,7 +46,7 @@
 				"cas": {
 					"class": "org.pac4j.cas.client.CasClient",
 					"props": {
-						"casLoginUrl": "https://freeuse1.casinthecloud.com/leleujgithub/login"
+						"casLoginUrl": "http://localhost:8888/cas/login"
 					}
 				},
 				"saml2": {
