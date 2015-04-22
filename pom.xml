@@ -51,7 +51,7 @@
     <mods.directory>target/mods</mods.directory>
 
     <!--Dependency versions-->
-    <pac4j.version>1.7.0-SNAPSHOT</pac4j.version>
+    <pac4j.version>1.7.0</pac4j.version>
     <vertx.version>2.1.5</vertx.version>
     <vertx.testtools.version>2.0.3-final</vertx.testtools.version>
     <junit.version>4.11</junit.version>
@@ -82,7 +82,7 @@
         <version>2.10.3</version>
         <scope>compile</scope>
     </dependency>
-    
+
     <!-- Pac4j -->
     <dependency>
         <groupId>org.pac4j</groupId>
@@ -184,13 +184,13 @@
         <groupId>io.vertx</groupId>
         <artifactId>vertx-maven-plugin</artifactId>
         <version>${maven.vertx.plugin.version}</version>
-        
+
         <configuration>
            <configFile>${vertx.configFile}</configFile>
            <instances>1</instances>
            <!-- classpath>src/main/resources/:src/test/resources/:target/classes/:target/test-classes/</classpath -->
         </configuration>
-        
+
         <!-- Make sure that the plugin uses the vert.x versions from this pom.xml not from its own pom.xml -->
         <dependencies>
           <dependency>
@@ -355,7 +355,7 @@
       </plugin>
     </plugins>
   </build>
-  
+
   <profiles>
         <profile>
             <id>default</id>
@@ -373,7 +373,7 @@
             </properties>
         </profile>
   </profiles>
-  
+
   <reporting>
     <plugins>
       <plugin>
@@ -391,5 +391,5 @@
       </plugin>
     </plugins>
   </reporting>
-  
+
 </project>
