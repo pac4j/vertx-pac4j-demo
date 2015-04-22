@@ -14,3 +14,5 @@ or run the stateless demo:
 
 If you have vert.x installed, run the module from the repository:
 <pre><code>vertx runMod org.pac4j~vertx-pac4j-demo~1.0.0</code></pre>
+
+Browse the demo on *http://localhost:8080*
