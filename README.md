@@ -1,18 +1,29 @@
-vertx-pac4j-demo
-================
+## What is this project ?
 
-To build the demo, you first need to install in your local repository the [vertx-pac4j binding](https://github.com/pac4j/vertx-pac4j).
+This **vertx-pac4j-demo** project is a Java web demo to test the [vertx-pac4j library](https://github.com/pac4j/vertx-pac4j) with Facebook, Twitter, form authentication, basic auth, CAS...  
+The **vertx-pac4j** library is built to:
 
-After, just run in this demo project:
-<pre><code>mvn install</code></pre>
+- delegate authentication to a provider and be authenticated back in the protected application with a complete user profile retrieved from the provider
+- support direct authenticated calls.
+
+
+## Quick start & test
+
+To build the demo:
+
+    cd vertx-pac4j-demo
+    mvn install
 
 You can then run the stateful demo from maven with:
-<pre><code>mvn vertx:runMod</code></pre>
+
+    mvn vertx:runMod
 
 or run the stateless demo:
-<pre><code>mvn vertx:runMod -Prest</code></pre>
+
+    mvn vertx:runMod -Prest
 
 If you have vert.x installed, run the module from the repository:
-<pre><code>vertx runMod org.pac4j~vertx-pac4j-demo~1.0.0</code></pre>
+
+    vertx runMod org.pac4j~vertx-pac4j-demo~1.0.0
 
 Browse the demo on *http://localhost:8080*
