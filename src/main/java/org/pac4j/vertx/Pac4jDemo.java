@@ -31,7 +31,7 @@ public class Pac4jDemo extends Verticle {
     @Override
     public void start() {
 
-        container.deployModule("org.pac4j~vertx-pac4j-module~1.1.0-SNAPSHOT",
+        container.deployModule("org.pac4j~vertx-pac4j-module~1.1.0",
                 container.config().getObject("pac4jManager"));
 
         JsonObject sessionManagerConf = container.config().getObject("sessionManager");
