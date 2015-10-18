@@ -1,3 +1,7 @@
+Please note that branch 1.0.0 of this code is the version for use with vertx-pac4j v1 and vert.x v 2.
+
+Master is for use with vertx-pac4j 2 and vert.x 3 onwards.
+
 ## What is this project ?
 
 This **vertx-pac4j-demo** project is a Java web demo to test the [vertx-pac4j library](https://github.com/pac4j/vertx-pac4j) with Facebook, Twitter, form authentication, basic auth, CAS...  
