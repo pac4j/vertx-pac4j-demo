@@ -1,5 +1,5 @@
 /*
-  Copyright 2014 - 2014 pac4j organization
+  Copyright 2014 - 2015 pac4j organization
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -86,8 +86,10 @@ public class DemoServerVerticle extends AbstractVerticle {
         LOG.info("DemoServerVerticle: config is \n" + config().encodePrettily());
         config = Pac4jConfigurationFactory.configFor(config());
 
+        // Facebook-authenticated endpoints
         addProtectedEndpointWithoutAuthorizer("/facebook/index.html", "FacebookClient", router);
-        addProtectedEndpoint("/facebookadmin/index.html", "FacebookClient", "admin", router);
+        addProtectedEndpoint("/facebookadmin/index.html", "FacebookClient", Pac4jConfigurationFactory.AUTHORIZER_ADMIN, router);
+        addProtectedEndpoint("/facebookcustom/index.html", "FacebookClient", Pac4jConfigurationFactory.AUTHORIZER_CUSTOM, router);
 
         router.get("/index.html").handler(DemoHandlers.indexHandler(config));
 

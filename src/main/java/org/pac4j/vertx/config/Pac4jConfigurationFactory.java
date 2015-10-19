@@ -22,6 +22,7 @@ import org.pac4j.core.authorization.RequireAnyRoleAuthorizer;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.oauth.client.FacebookClient;
+import org.pac4j.vertx.authorizer.CustomAuthorizer;
 
 /**
  * @author Jeremy Prime
@@ -30,12 +31,15 @@ import org.pac4j.oauth.client.FacebookClient;
 public class Pac4jConfigurationFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(Pac4jConfigurationFactory.class);
+    public static final String AUTHORIZER_ADMIN = "admin";
+    public static final String AUTHORIZER_CUSTOM = "custom";
 
     public static Config configFor(final JsonObject jsonConf) {
         final String baseUrl = jsonConf.getString("baseUrl");
         final Clients clients = new Clients(baseUrl + "/callback", facebookClient(jsonConf));
         final Config config = new Config(clients);
-        config.addAuthorizer("admin", new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
+        config.addAuthorizer(AUTHORIZER_ADMIN, new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
+        config.addAuthorizer(AUTHORIZER_CUSTOM, new CustomAuthorizer());
         LOG.info("Config created " + config.toString());
         return config;
     }
