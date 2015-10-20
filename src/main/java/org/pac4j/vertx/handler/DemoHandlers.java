@@ -56,6 +56,8 @@ public class DemoHandlers {
             }
 
             rc.put("urlFacebook", urlFacebook);
+            final UserProfile profile = getUserProfile(rc);
+            rc.put("userProfile", profile);
 
             // and now delegate to the engine to render it.
             engine.render(rc, "templates/index.hbs", res -> {

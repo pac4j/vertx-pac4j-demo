@@ -6,3 +6,4 @@ mods
 bin
 .idea
 *.iml
+.vertx
