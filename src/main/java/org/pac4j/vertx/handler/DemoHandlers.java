@@ -29,6 +29,7 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.core.profile.UserProfile;
 import org.pac4j.vertx.VertxWebContext;
 import org.pac4j.vertx.auth.Pac4jAuthProvider;
+import org.pac4j.vertx.handler.impl.ApplicationLogoutHandler;
 import org.pac4j.vertx.handler.impl.Pac4jAuthHandlerOptions;
 import org.pac4j.vertx.handler.impl.RequiresAuthenticationHandler;
 
@@ -75,6 +76,10 @@ public class DemoHandlers {
                                                       final Pac4jAuthProvider provider,
                                                       final Pac4jAuthHandlerOptions options) {
         return new RequiresAuthenticationHandler(vertx, config, provider, options);
+    }
+
+    public static Handler<RoutingContext> logoutHandler() {
+        return new ApplicationLogoutHandler();
     }
 
     public static Handler<RoutingContext> protectedIndexHandler() {

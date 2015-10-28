@@ -95,20 +95,16 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         router.get("/callback").handler(new CallbackHandler(vertx, config)); // This will deploy the callback handler
 
+        router.get("/logout").handler(DemoHandlers.logoutHandler());
+
         router.get("/").handler(DemoHandlers.indexHandler(config));
 
         vertx.createHttpServer()
                 .requestHandler(router::accept)
                 .listen(8080);
 
-//        SessionHelper sessionHelper = new SessionHelper(vertx);
-//        Pac4jHelper pac4jHelper = new Pac4jHelper(vertx);
-//
-//        RouteMatcher rm = new RouteMatcher();
 //
 //        DemoHandlers.AuthenticatedHandler authenticatedHandler = new DemoHandlers.AuthenticatedHandler();
-//        rm.get("/facebook/index.html", new RequiresAuthenticationHandler("FacebookClient", authenticatedHandler,
-//                pac4jHelper, sessionHelper));
 //        rm.get("/twitter/index.html", new RequiresAuthenticationHandler("TwitterClient", authenticatedHandler,
 //                pac4jHelper, sessionHelper));
 //        rm.get("/form/index.html", new RequiresAuthenticationHandler("FormClient", authenticatedHandler, pac4jHelper,
@@ -129,10 +125,6 @@ public class DemoServerVerticle extends AbstractVerticle {
 //        Handler<HttpServerRequest> callback = new CallbackHandler(pac4jHelper, sessionHelper);
 //        rm.get("/callback", callback);
 //        rm.post("/callback", callback);
-//
-//        rm.get("/logout", new LogoutHandler(sessionHelper));
-//
-//        rm.get("/", new DemoHandlers.IndexHandler(pac4jHelper, sessionHelper));
 //
 //        rm.get("/assets/js/app.js", new Handler<HttpServerRequest>() {
 //            @Override
