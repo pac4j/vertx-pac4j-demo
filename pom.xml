@@ -39,7 +39,7 @@
         <demo.server.verticle>org.pac4j.vertx.verticle.MainVerticle</demo.server.verticle>
         <!--Dependency versions-->
         <pac4j.version>1.8.0</pac4j.version>
-        <vertx.version>3.0.0</vertx.version>
+        <vertx.version>3.1.0</vertx.version>
         <junit.version>4.11</junit.version>
 
         <!--Plugin versions-->
@@ -126,7 +126,12 @@
             <version>${handlebars.java.version}</version>
         </dependency>
 
-        <!--Vertx provided dependencies-->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web-templ-handlebars</artifactId>
+            <version>${vertx.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
