@@ -1,4 +1,5 @@
 Please note that branch 1.0.0 of this code is the version for use with vertx-pac4j v1 and vert.x v 2.
+This is also work in progress and several authenticators and endpoints are stil to be added
 
 Master is for use with vertx-pac4j 2 and vert.x 3 onwards.
 
@@ -16,18 +17,10 @@ The **vertx-pac4j** library is built to:
 To build the demo:
 
     cd vertx-pac4j-demo
-    mvn install
+    mvn package
 
-You can then run the stateful demo from maven with:
+You can then run the demo with:
 
-    mvn vertx:runMod
-
-or run the stateless demo:
-
-    mvn vertx:runMod -Prest
-
-If you have vert.x installed, run the module from the repository:
-
-    vertx runMod org.pac4j~vertx-pac4j-demo~1.0.0
+    java -jar target/vertx-pac4j-demo-2.0-SNAPSHOT-fat.jar
 
 Browse the demo on *http://localhost:8080*
