@@ -21,6 +21,6 @@ To build the demo:
 
 You can then run the demo with:
 
-    java -jar target/vertx-pac4j-demo-2.0-SNAPSHOT-fat.jar
+    java -jar target/vertx-pac4j-demo-2.0.0-SNAPSHOT-fat.jar
 
 Browse the demo on *http://localhost:8080*
