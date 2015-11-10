@@ -22,6 +22,7 @@ import org.pac4j.core.authorization.RequireAnyRoleAuthorizer;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.oauth.client.FacebookClient;
+import org.pac4j.oauth.client.TwitterClient;
 import org.pac4j.vertx.authorizer.CustomAuthorizer;
 
 /**
@@ -36,7 +37,10 @@ public class Pac4jConfigurationFactory {
 
     public static Config configFor(final JsonObject jsonConf) {
         final String baseUrl = jsonConf.getString("baseUrl");
-        final Clients clients = new Clients(baseUrl + "/callback", facebookClient(jsonConf));
+        final Clients clients = new Clients(baseUrl + "/callback",
+                // oAuth clients
+                facebookClient(jsonConf),
+                twitterClient());
         final Config config = new Config(clients);
         config.addAuthorizer(AUTHORIZER_ADMIN, new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
         config.addAuthorizer(AUTHORIZER_CUSTOM, new CustomAuthorizer());
@@ -48,6 +52,11 @@ public class Pac4jConfigurationFactory {
         final String fbId = jsonConf.getString("fbId");
         final String fbSecret = jsonConf.getString("fbSecret");
         return new FacebookClient(fbId, fbSecret);
+    }
+
+    public static TwitterClient twitterClient() {
+        return new TwitterClient("HVSQGAw2XmiwcKOTvZFbQ",
+                "FSiO9G9VRR4KCuksky0kgGuo8gAVndYymr4Nl7qc8AA");
     }
 
 }

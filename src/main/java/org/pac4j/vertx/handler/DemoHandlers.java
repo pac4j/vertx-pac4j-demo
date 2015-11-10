@@ -50,13 +50,18 @@ public class DemoHandlers {
             final Clients clients = config.getClients();
             final WebContext context = new VertxWebContext(rc);
             final String urlFacebook;
+            final String urlTwitter;
             try {
                 urlFacebook = ((IndirectClient) clients.findClient("FacebookClient")).getRedirectAction(context, false).getLocation();
+                urlTwitter = ((IndirectClient) clients.findClient("TwitterClient")).getRedirectAction(context, false).getLocation();
+
+//                TWITTER NOT WORKING YET FOR "AUTHENTICATE WITH" LINK
             } catch (RequiresHttpAction requiresHttpAction) {
                 throw new RuntimeException(requiresHttpAction);
             }
 
             rc.put("urlFacebook", urlFacebook);
+            rc.put("urlTwitter", urlTwitter);
             final UserProfile profile = getUserProfile(rc);
             rc.put("userProfile", profile);
 

@@ -91,6 +91,11 @@ public class DemoServerVerticle extends AbstractVerticle {
         addProtectedEndpoint("/facebookadmin/index.html", "FacebookClient", Pac4jConfigurationFactory.AUTHORIZER_ADMIN, router);
         addProtectedEndpoint("/facebookcustom/index.html", "FacebookClient", Pac4jConfigurationFactory.AUTHORIZER_CUSTOM, router);
 
+        // Twitter/facebook-authenticated endpoints
+        addProtectedEndpointWithoutAuthorizer("/twitter/index.html", "TwitterClient,FacebookClient", router);
+
+
+
         router.get("/index.html").handler(DemoHandlers.indexHandler(config));
 
         router.get("/callback").handler(new CallbackHandler(vertx, config)); // This will deploy the callback handler
