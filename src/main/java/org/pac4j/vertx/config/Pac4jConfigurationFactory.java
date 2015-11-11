@@ -55,8 +55,8 @@ public class Pac4jConfigurationFactory {
     }
 
     public static TwitterClient twitterClient() {
-        return new TwitterClient("HVSQGAw2XmiwcKOTvZFbQ",
-                "FSiO9G9VRR4KCuksky0kgGuo8gAVndYymr4Nl7qc8AA");
+        return new TwitterClient("K9dtF7hwOweVHMxIr8Qe4gshl",
+                "9tlc3TBpl5aX47BGGgMNC8glDqVYi8mJKHG6LiWYVD4Sh1F9Oj");
     }
 
 }
