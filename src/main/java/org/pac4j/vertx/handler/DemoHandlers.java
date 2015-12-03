@@ -64,6 +64,9 @@ public class DemoHandlers {
             rc.put("urlTwitter", urlTwitter);
             final UserProfile profile = getUserProfile(rc);
             rc.put("userProfile", profile);
+            if (rc.user() != null) {
+                rc.put("vertxUserPrincipal", rc.user().principal());
+            }
 
             // and now delegate to the engine to render it.
             engine.render(rc, "templates/index.hbs", res -> {
@@ -96,6 +99,9 @@ public class DemoHandlers {
 
             final UserProfile profile = getUserProfile(rc);
             rc.put("userProfile", profile);
+            if (rc.user() != null) {
+                rc.put("vertxUserPrincipal", rc.user().principal());
+            }
 
             engine.render(rc, "templates/protectedIndex.hbs", res -> {
                 if (res.succeeded()) {
