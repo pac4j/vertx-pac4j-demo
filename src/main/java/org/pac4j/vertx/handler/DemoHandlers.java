@@ -27,6 +27,7 @@ import org.pac4j.core.exception.RequiresHttpAction;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.core.profile.UserProfile;
+import org.pac4j.vertx.VertxProfileManager;
 import org.pac4j.vertx.VertxWebContext;
 import org.pac4j.vertx.auth.Pac4jAuthProvider;
 import org.pac4j.vertx.handler.impl.ApplicationLogoutHandler;
@@ -51,17 +52,18 @@ public class DemoHandlers {
             final WebContext context = new VertxWebContext(rc);
             final String urlFacebook;
             final String urlTwitter;
+            final String urlCas;
             try {
                 urlFacebook = ((IndirectClient) clients.findClient("FacebookClient")).getRedirectAction(context, false).getLocation();
                 urlTwitter = ((IndirectClient) clients.findClient("TwitterClient")).getRedirectAction(context, false).getLocation();
-
-//                TWITTER NOT WORKING YET FOR "AUTHENTICATE WITH" LINK
+                urlCas = ((IndirectClient) clients.findClient("CasClient")).getRedirectAction(context, false).getLocation();
             } catch (RequiresHttpAction requiresHttpAction) {
                 throw new RuntimeException(requiresHttpAction);
             }
 
             rc.put("urlFacebook", urlFacebook);
             rc.put("urlTwitter", urlTwitter);
+            rc.put("urlCas", urlCas);
             final UserProfile profile = getUserProfile(rc);
             rc.put("userProfile", profile);
 
@@ -108,7 +110,7 @@ public class DemoHandlers {
     }
 
     private static CommonProfile getUserProfile(final RoutingContext rc) {
-        final ProfileManager<CommonProfile> profileManager = new ProfileManager<>(new VertxWebContext(rc));
+        final ProfileManager<CommonProfile> profileManager = new VertxProfileManager<>(new VertxWebContext(rc));
         return profileManager.get(true);
     }
 
@@ -141,12 +143,9 @@ public class DemoHandlers {
 //
 //                            final StringBuilder sb = new StringBuilder();
 //                            sb.append("<h1>index</h1>");
-//                            sb.append("<a href=\"facebook/index.html\">Protected url by Facebook : facebook/index.html</a><br />");
-//                            sb.append("<a href=\"twitter/index.html\">Protected url by Twitter : twitter/index.html</a><br />");
 //                            sb.append("<a href=\"form/index.html\">Protected url by form authentication : form/index.html</a><br />");
 //                            sb.append("<a href=\"javascript:ajaxClick();\">Click here to send AJAX request after performing form authentication</a><br />");
 //                            sb.append("<a href=\"basicauth/index.html\">Protected url by basic auth : basicauth/index.html</a><br />");
-//                            sb.append("<a href=\"cas/index.html\">Protected url by CAS : cas/index.html</a><br />");
 //                            sb.append("<a href=\"saml2/index.html\">Protected url by SAML2 : saml2/index.html</a><br />");
 //                            sb.append("<a href=\"oidc/index.html\">Protected url by OpenID Connect : oidc/index.html</a><br />");
 //                            sb.append("<br />");
@@ -156,16 +155,10 @@ public class DemoHandlers {
 //                            sb.append(pac4jHelper.getUserProfileFromSession(attributes));
 //                            sb.append("<br /><br />");
 //                            sb.append("<hr />");
-//                            sb.append("<a href=\"").append(response.getString("FacebookClient"))
-//                                    .append("\">Authenticate with Facebook</a><br />");
-//                            sb.append("<a href=\"").append(response.getString("TwitterClient"))
-//                                    .append("\">Authenticate with Twitter</a><br />");
 //                            sb.append("<a href=\"").append(response.getString("FormClient"))
 //                                    .append("\">Authenticate with form</a><br />");
 //                            sb.append("<a href=\"").append(response.getString("BasicAuthClient"))
 //                                    .append("\">Authenticate with basic auth</a><br />");
-//                            sb.append("<a href=\"").append(response.getString("CasClient"))
-//                                    .append("\">Authenticate with CAS</a><br />");
 //                            sb.append("<a href=\"").append(response.getString("Saml2Client"))
 //                                    .append("\">Authenticate with SAML</a><br />");
 //                            sb.append("<a href=\"").append(response.getString("OidcClient"))

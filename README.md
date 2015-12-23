@@ -24,3 +24,6 @@ You can then run the demo with:
     java -jar target/vertx-pac4j-demo-2.0.0-SNAPSHOT-fat.jar
 
 Browse the demo on *http://localhost:8080*
+
+To test the CAS support, you need to start a CAS server on port 8888. 
+Use the following demo: [cas-overlay-demo](https://github.com/leleuj/cas-overlay-demo) with the option: -Djetty.port=8888.

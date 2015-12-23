@@ -84,7 +84,7 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         // need to add a json configuration file internally and ensure it's consumed by this verticle
         LOG.info("DemoServerVerticle: config is \n" + config().encodePrettily());
-        config = Pac4jConfigurationFactory.configFor(config());
+        config = Pac4jConfigurationFactory.configFor(config(), vertx, sessionStore);
 
         // Facebook-authenticated endpoints
         addProtectedEndpointWithoutAuthorizer("/facebook/index.html", "FacebookClient", router);
@@ -94,7 +94,8 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Twitter/facebook-authenticated endpoints
         addProtectedEndpointWithoutAuthorizer("/twitter/index.html", "TwitterClient,FacebookClient", router);
 
-
+        // Cas-authenticated endpoint
+        addProtectedEndpointWithoutAuthorizer("/cas/index.html", "CasClient", router);
 
         router.get("/index.html").handler(DemoHandlers.indexHandler(config));
 

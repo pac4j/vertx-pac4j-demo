@@ -1,5 +1,6 @@
 {
   "baseUrl": "http://localhost:8080",
   "fbId": "161172184232419",
-  "fbSecret": "282fb4ff040eead3c049e3c665117ef8"
+  "fbSecret": "282fb4ff040eead3c049e3c665117ef8",
+  "casUrl": "http://localhost:8888/cas/login"
 }
