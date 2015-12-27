@@ -53,10 +53,13 @@ public class DemoHandlers {
             final String urlFacebook;
             final String urlTwitter;
             final String urlCas;
+            final String urlSaml;
+
             try {
                 urlFacebook = ((IndirectClient) clients.findClient("FacebookClient")).getRedirectAction(context, false).getLocation();
                 urlTwitter = ((IndirectClient) clients.findClient("TwitterClient")).getRedirectAction(context, false).getLocation();
                 urlCas = ((IndirectClient) clients.findClient("CasClient")).getRedirectAction(context, false).getLocation();
+                urlSaml = ((IndirectClient) clients.findClient("SAML2Client")).getRedirectAction(context, false).getLocation();
             } catch (RequiresHttpAction requiresHttpAction) {
                 throw new RuntimeException(requiresHttpAction);
             }
@@ -64,6 +67,7 @@ public class DemoHandlers {
             rc.put("urlFacebook", urlFacebook);
             rc.put("urlTwitter", urlTwitter);
             rc.put("urlCas", urlCas);
+            rc.put("urlSaml", urlSaml);
             final UserProfile profile = getUserProfile(rc);
             rc.put("userProfile", profile);
 

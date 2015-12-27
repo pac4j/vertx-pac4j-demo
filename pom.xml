@@ -186,6 +186,9 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/services/io.vertx.core.spi.VerticleFactory</resource>
                                 </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/services/org.opensaml.core.config.Initializer</resource>
+                                </transformer>
                             </transformers>
                             <artifactSet>
                             </artifactSet>

@@ -26,8 +26,12 @@ import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.TwitterClient;
+import org.pac4j.saml.client.SAML2Client;
+import org.pac4j.saml.client.SAML2ClientConfiguration;
 import org.pac4j.vertx.authorizer.CustomAuthorizer;
 import org.pac4j.vertx.cas.VertxLocalSharedDataLogoutHandler;
+
+import java.io.File;
 
 /**
  * @author Jeremy Prime
@@ -45,7 +49,8 @@ public class Pac4jConfigurationFactory {
                 // oAuth clients
                 facebookClient(jsonConf),
                 twitterClient(),
-                casClient(jsonConf, vertx, sessionStore));
+                casClient(jsonConf, vertx, sessionStore),
+                saml2Client());
         final Config config = new Config(clients);
         config.addAuthorizer(AUTHORIZER_ADMIN, new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
         config.addAuthorizer(AUTHORIZER_CUSTOM, new CustomAuthorizer());
@@ -75,6 +80,16 @@ public class Pac4jConfigurationFactory {
         casClient.setCasProxyReceptor(casProxyReceptor);*/
         casClient.setCasLoginUrl(casUrl);
         return casClient;
+    }
+
+    public static SAML2Client saml2Client() {
+        final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration("resource:samlKeystore.jks",
+                "pac4j-demo-passwd", "pac4j-demo-passwd", "resource:openidp-feide.xml");
+        cfg.setMaximumAuthenticationLifetime(3600);
+        cfg.setServiceProviderEntityId("urn:mace:saml:vertx-demo.pac4j.org");
+        cfg.setServiceProviderMetadataPath(new File("target", "sp-metadata.xml").getAbsolutePath());
+        final SAML2Client saml2Client = new SAML2Client(cfg);
+        return saml2Client;
     }
 
 }

@@ -22,6 +22,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.UserSessionHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
@@ -97,9 +98,15 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Cas-authenticated endpoint
         addProtectedEndpointWithoutAuthorizer("/cas/index.html", "CasClient", router);
 
+        // Saml-authenticated endpoint
+        addProtectedEndpointWithoutAuthorizer("/saml/index.html", "SAML2Client", router);
+
         router.get("/index.html").handler(DemoHandlers.indexHandler(config));
 
-        router.get("/callback").handler(new CallbackHandler(vertx, config)); // This will deploy the callback handler
+        final CallbackHandler callbackHandler = new CallbackHandler(vertx, config);
+        router.get("/callback").handler(callbackHandler); // This will deploy the callback handler
+        router.post("/callback").handler(BodyHandler.create().setMergeFormAttributes(true));
+        router.post("/callback").handler(callbackHandler);
 
         router.get("/logout").handler(DemoHandlers.logoutHandler());
 
