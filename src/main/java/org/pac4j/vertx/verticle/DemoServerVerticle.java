@@ -95,6 +95,9 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Twitter/facebook-authenticated endpoints
         addProtectedEndpointWithoutAuthorizer("/twitter/index.html", "TwitterClient,FacebookClient", router);
 
+        // Form-authenticated endpoint
+        addProtectedEndpointWithoutAuthorizer("/form/index.html", "FormClient", router);
+
         // Cas-authenticated endpoint
         addProtectedEndpointWithoutAuthorizer("/cas/index.html", "CasClient", router);
 
@@ -111,6 +114,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         router.get("/logout").handler(DemoHandlers.logoutHandler());
 
         router.get("/").handler(DemoHandlers.indexHandler(config));
+        router.get("/loginForm").handler(DemoHandlers.loginFormHandler(config));
 
         vertx.createHttpServer()
                 .requestHandler(router::accept)

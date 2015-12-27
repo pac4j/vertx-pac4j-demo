@@ -27,6 +27,7 @@ import org.pac4j.core.exception.RequiresHttpAction;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.core.profile.UserProfile;
+import org.pac4j.http.client.indirect.FormClient;
 import org.pac4j.vertx.VertxProfileManager;
 import org.pac4j.vertx.VertxWebContext;
 import org.pac4j.vertx.auth.Pac4jAuthProvider;
@@ -54,12 +55,14 @@ public class DemoHandlers {
             final String urlTwitter;
             final String urlCas;
             final String urlSaml;
+            final String urlForm;
 
             try {
                 urlFacebook = ((IndirectClient) clients.findClient("FacebookClient")).getRedirectAction(context, false).getLocation();
                 urlTwitter = ((IndirectClient) clients.findClient("TwitterClient")).getRedirectAction(context, false).getLocation();
                 urlCas = ((IndirectClient) clients.findClient("CasClient")).getRedirectAction(context, false).getLocation();
                 urlSaml = ((IndirectClient) clients.findClient("SAML2Client")).getRedirectAction(context, false).getLocation();
+                urlForm = ((IndirectClient) clients.findClient("FormClient")).getRedirectAction(context, false).getLocation();
             } catch (RequiresHttpAction requiresHttpAction) {
                 throw new RuntimeException(requiresHttpAction);
             }
@@ -68,6 +71,7 @@ public class DemoHandlers {
             rc.put("urlTwitter", urlTwitter);
             rc.put("urlCas", urlCas);
             rc.put("urlSaml", urlSaml);
+            rc.put("urlForm", urlForm);
             final UserProfile profile = getUserProfile(rc);
             rc.put("userProfile", profile);
 
@@ -104,6 +108,23 @@ public class DemoHandlers {
             rc.put("userProfile", profile);
 
             engine.render(rc, "templates/protectedIndex.hbs", res -> {
+                if (res.succeeded()) {
+                    rc.response().end(res.result());
+                } else {
+                    rc.fail(res.cause());
+                }
+            });
+        };
+    }
+
+    public static Handler<RoutingContext> loginFormHandler(final Config config) {
+        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
+        final FormClient formClient = (FormClient) config.getClients().findClient("FormClient");
+        final String url = formClient.getCallbackUrl();
+
+        return rc -> {
+            rc.put("url", url);
+            engine.render(rc, "templates/loginForm.hbs", res -> {
                 if (res.succeeded()) {
                     rc.response().end(res.result());
                 } else {

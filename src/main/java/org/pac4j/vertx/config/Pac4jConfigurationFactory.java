@@ -24,6 +24,8 @@ import org.pac4j.cas.client.CasClient;
 import org.pac4j.core.authorization.RequireAnyRoleAuthorizer;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
+import org.pac4j.http.client.indirect.FormClient;
+import org.pac4j.http.credentials.authenticator.test.SimpleTestUsernamePasswordAuthenticator;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.TwitterClient;
 import org.pac4j.saml.client.SAML2Client;
@@ -50,7 +52,8 @@ public class Pac4jConfigurationFactory {
                 facebookClient(jsonConf),
                 twitterClient(),
                 casClient(jsonConf, vertx, sessionStore),
-                saml2Client());
+                saml2Client(),
+                formClient(baseUrl));
         final Config config = new Config(clients);
         config.addAuthorizer(AUTHORIZER_ADMIN, new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
         config.addAuthorizer(AUTHORIZER_CUSTOM, new CustomAuthorizer());
@@ -74,10 +77,6 @@ public class Pac4jConfigurationFactory {
         final CasClient casClient = new CasClient();
         casClient.setLogoutHandler(new VertxLocalSharedDataLogoutHandler(vertx, sessionStore));
         casClient.setCasProtocol(CasClient.CasProtocol.CAS20);
-        // casClient.setGateway(true);
-        /*final CasProxyReceptor casProxyReceptor = new CasProxyReceptor();
-        casProxyReceptor.setCallbackUrl("http://localhost:9000/casProxyCallback");
-        casClient.setCasProxyReceptor(casProxyReceptor);*/
         casClient.setCasLoginUrl(casUrl);
         return casClient;
     }
@@ -90,6 +89,10 @@ public class Pac4jConfigurationFactory {
         cfg.setServiceProviderMetadataPath(new File("target", "sp-metadata.xml").getAbsolutePath());
         final SAML2Client saml2Client = new SAML2Client(cfg);
         return saml2Client;
+    }
+
+    public static FormClient formClient(final String baseUrl) {
+        return new FormClient(baseUrl + "/loginForm", new SimpleTestUsernamePasswordAuthenticator());
     }
 
 }
