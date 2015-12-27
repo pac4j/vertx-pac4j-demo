@@ -17,6 +17,8 @@ package org.pac4j.vertx.handler;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.HandlebarsTemplateEngine;
 import org.pac4j.core.client.Clients;
@@ -34,6 +36,8 @@ import org.pac4j.vertx.auth.Pac4jAuthProvider;
 import org.pac4j.vertx.handler.impl.ApplicationLogoutHandler;
 import org.pac4j.vertx.handler.impl.Pac4jAuthHandlerOptions;
 import org.pac4j.vertx.handler.impl.RequiresAuthenticationHandler;
+
+import java.util.function.BiConsumer;
 
 /**
  * A collection of basic handlers printing dynamic html for the demo application.
@@ -98,23 +102,7 @@ public class DemoHandlers {
     }
 
     public static Handler<RoutingContext> protectedIndexHandler() {
-
-        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
-
-        return rc -> {
-            // and now delegate to the engine to render it.
-
-            final UserProfile profile = getUserProfile(rc);
-            rc.put("userProfile", profile);
-
-            engine.render(rc, "templates/protectedIndex.hbs", res -> {
-                if (res.succeeded()) {
-                    rc.response().end(res.result());
-                } else {
-                    rc.fail(res.cause());
-                }
-            });
-        };
+        return generateProtectedIndex((rc, buf) -> rc.response().end(buf));
     }
 
     public static Handler<RoutingContext> loginFormHandler(final Config config) {
@@ -127,6 +115,35 @@ public class DemoHandlers {
             engine.render(rc, "templates/loginForm.hbs", res -> {
                 if (res.succeeded()) {
                     rc.response().end(res.result());
+                } else {
+                    rc.fail(res.cause());
+                }
+            });
+        };
+    }
+
+    public static Handler<RoutingContext> formIndexJsonHandler() {
+
+        return generateProtectedIndex((rc, buf) -> {
+            final JsonObject json = new JsonObject()
+                    .put("content", buf.toString());
+            rc.response().end(json.encodePrettily());
+        });
+
+    }
+
+    public static Handler<RoutingContext> generateProtectedIndex(final BiConsumer<RoutingContext, Buffer> generatedContentConsumer) {
+        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
+
+        return rc -> {
+            // and now delegate to the engine to render it.
+
+            final UserProfile profile = getUserProfile(rc);
+            rc.put("userProfile", profile);
+
+            engine.render(rc, "templates/protectedIndex.hbs", res -> {
+                if (res.succeeded()) {
+                    generatedContentConsumer.accept(rc, res.result());
                 } else {
                     rc.fail(res.cause());
                 }
@@ -168,10 +185,8 @@ public class DemoHandlers {
 //
 //                            final StringBuilder sb = new StringBuilder();
 //                            sb.append("<h1>index</h1>");
-//                            sb.append("<a href=\"form/index.html\">Protected url by form authentication : form/index.html</a><br />");
 //                            sb.append("<a href=\"javascript:ajaxClick();\">Click here to send AJAX request after performing form authentication</a><br />");
 //                            sb.append("<a href=\"basicauth/index.html\">Protected url by basic auth : basicauth/index.html</a><br />");
-//                            sb.append("<a href=\"saml2/index.html\">Protected url by SAML2 : saml2/index.html</a><br />");
 //                            sb.append("<a href=\"oidc/index.html\">Protected url by OpenID Connect : oidc/index.html</a><br />");
 //                            sb.append("<br />");
 //                            sb.append("<a href=\"logout\">logout</a>");
@@ -180,12 +195,8 @@ public class DemoHandlers {
 //                            sb.append(pac4jHelper.getUserProfileFromSession(attributes));
 //                            sb.append("<br /><br />");
 //                            sb.append("<hr />");
-//                            sb.append("<a href=\"").append(response.getString("FormClient"))
-//                                    .append("\">Authenticate with form</a><br />");
 //                            sb.append("<a href=\"").append(response.getString("BasicAuthClient"))
 //                                    .append("\">Authenticate with basic auth</a><br />");
-//                            sb.append("<a href=\"").append(response.getString("Saml2Client"))
-//                                    .append("\">Authenticate with SAML</a><br />");
 //                            sb.append("<a href=\"").append(response.getString("OidcClient"))
 //                                    .append("\">Authenticate with OpenID Connect</a><br />");
 //                            sb.append("<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js\"></script>");

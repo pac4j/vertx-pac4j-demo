@@ -4,6 +4,7 @@
 <a href="facebookcustom/index.html">Protected url by Facebook with custom authorizer (= must be a <em>HttpProfile</em> where the username starts with "jle"): facebookcustom/index.html</a><br />
 <a href="twitter/index.html">Protected url by Twitter: twitter/index.html</a> or <a href="twitter/index.html?client_name=FacebookClient">by Facebook: twitter/index.html?client_name=FacebookClient</a><br />
 <a href="form/index.html">Protected url by form authentication : form/index.html</a> (use login = pwd)<br />
+<a href="javascript:ajaxClick();">Click here to send AJAX request after performing form authentication</a><br />
 <a href="cas/index.html">Protected url by CAS : cas/index.html</a> (use login = pwd)<br />
 <a href="saml/index.html">Protected url by SAML : saml/index.html</a> (use a real account)<br />
 
@@ -25,3 +26,9 @@
 <h2>Find the source code on <a target="_blank" href="https://github.com/pac4j/vertx-pac4j-demo">https://github.com/pac4j/vertx-pac4j-demo</a><br/>
     <br />
 </h2>
+
+<!-- Link to Google CDN's jQuery; fall back to local -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="javascript/jquery.min.js"><\/script>')</script>
+
+<script src="javascript/app.js"></script>

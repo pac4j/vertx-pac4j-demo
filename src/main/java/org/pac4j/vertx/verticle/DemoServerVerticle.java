@@ -24,6 +24,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.SessionHandler;
+import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.UserSessionHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.sstore.SessionStore;
@@ -98,6 +99,13 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Form-authenticated endpoint
         addProtectedEndpointWithoutAuthorizer("/form/index.html", "FormClient", router);
 
+        // Form-protected AJAX endpoint
+        Pac4jAuthHandlerOptions options = new Pac4jAuthHandlerOptions().withClientName("FormClient");
+        final String ajaxProtectedUrl = "/form/index.html.json";
+        router.get(ajaxProtectedUrl).handler(DemoHandlers.authHandler(vertx, config, authProvider,
+                options));
+        router.get(ajaxProtectedUrl).handler(DemoHandlers.formIndexJsonHandler());
+
         // Cas-authenticated endpoint
         addProtectedEndpointWithoutAuthorizer("/cas/index.html", "CasClient", router);
 
@@ -113,8 +121,9 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         router.get("/logout").handler(DemoHandlers.logoutHandler());
 
-        router.get("/").handler(DemoHandlers.indexHandler(config));
         router.get("/loginForm").handler(DemoHandlers.loginFormHandler(config));
+        router.get("/").handler(DemoHandlers.indexHandler(config));
+        router.get("/*").handler(StaticHandler.create("static"));
 
         vertx.createHttpServer()
                 .requestHandler(router::accept)
