@@ -29,6 +29,7 @@ import org.pac4j.http.client.indirect.IndirectBasicAuthClient;
 import org.pac4j.http.credentials.authenticator.test.SimpleTestUsernamePasswordAuthenticator;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.TwitterClient;
+import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.client.SAML2ClientConfiguration;
 import org.pac4j.vertx.authorizer.CustomAuthorizer;
@@ -55,7 +56,8 @@ public class Pac4jConfigurationFactory {
                 casClient(jsonConf, vertx, sessionStore),
                 saml2Client(),
                 formClient(baseUrl),
-                directBasicAuthClient());
+                directBasicAuthClient(),
+                oidcClient());
         final Config config = new Config(clients);
         config.addAuthorizer(AUTHORIZER_ADMIN, new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
         config.addAuthorizer(AUTHORIZER_CUSTOM, new CustomAuthorizer());
@@ -89,8 +91,7 @@ public class Pac4jConfigurationFactory {
         cfg.setMaximumAuthenticationLifetime(3600);
         cfg.setServiceProviderEntityId("urn:mace:saml:vertx-demo.pac4j.org");
         cfg.setServiceProviderMetadataPath(new File("target", "sp-metadata.xml").getAbsolutePath());
-        final SAML2Client saml2Client = new SAML2Client(cfg);
-        return saml2Client;
+        return new SAML2Client(cfg);
     }
 
     public static FormClient formClient(final String baseUrl) {
@@ -99,6 +100,16 @@ public class Pac4jConfigurationFactory {
 
     public static IndirectBasicAuthClient directBasicAuthClient() {
         return new IndirectBasicAuthClient(new SimpleTestUsernamePasswordAuthenticator());
+    }
+
+    public static OidcClient oidcClient() {
+        // OpenID Connect
+        final OidcClient oidcClient = new OidcClient();
+        oidcClient.setClientID("736887899191-s2lsd8pakdjugkbp6v3lou7jd631rka2.apps.googleusercontent.com");
+        oidcClient.setSecret("18B4WAQgzs2RhUY8V_Pl0qSh");
+        oidcClient.setDiscoveryURI("https://accounts.google.com/.well-known/openid-configuration");
+        oidcClient.addCustomParam("prompt", "consent");
+        return oidcClient;
     }
 
 }

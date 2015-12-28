@@ -61,11 +61,13 @@ public class DemoHandlers {
             final String urlSaml;
             final String urlForm;
             final String urlBasicAuth;
+            final String urlOidc;
 
             try {
                 urlFacebook = ((IndirectClient) clients.findClient("FacebookClient")).getRedirectAction(context, false).getLocation();
                 urlTwitter = ((IndirectClient) clients.findClient("TwitterClient")).getRedirectAction(context, false).getLocation();
                 urlCas = ((IndirectClient) clients.findClient("CasClient")).getRedirectAction(context, false).getLocation();
+                urlOidc = ((IndirectClient) clients.findClient("OidcClient")).getRedirectAction(context, false).getLocation();
                 urlSaml = ((IndirectClient) clients.findClient("SAML2Client")).getRedirectAction(context, false).getLocation();
                 urlForm = ((IndirectClient) clients.findClient("FormClient")).getRedirectAction(context, false).getLocation();
                 urlBasicAuth = ((IndirectClient) clients.findClient("IndirectBasicAuthClient")).getRedirectAction(context, false).getLocation();
@@ -79,6 +81,7 @@ public class DemoHandlers {
             rc.put("urlSaml", urlSaml);
             rc.put("urlForm", urlForm);
             rc.put("urlBasicAuth", urlBasicAuth);
+            rc.put("urlOidc", urlOidc);
             final UserProfile profile = getUserProfile(rc);
             rc.put("userProfile", profile);
 

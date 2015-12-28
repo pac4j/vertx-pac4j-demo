@@ -112,6 +112,9 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Cas-authenticated endpoint
         addProtectedEndpointWithoutAuthorizer("/cas/index.html", "CasClient", router);
 
+        // Oidc-authenticated endpoint
+        addProtectedEndpointWithoutAuthorizer("/oidc/index.html", "OidcClient", router);
+
         // Saml-authenticated endpoint
         addProtectedEndpointWithoutAuthorizer("/saml/index.html", "SAML2Client", router);
 
