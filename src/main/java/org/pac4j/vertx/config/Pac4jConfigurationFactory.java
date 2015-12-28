@@ -25,6 +25,7 @@ import org.pac4j.core.authorization.RequireAnyRoleAuthorizer;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.http.client.indirect.FormClient;
+import org.pac4j.http.client.indirect.IndirectBasicAuthClient;
 import org.pac4j.http.credentials.authenticator.test.SimpleTestUsernamePasswordAuthenticator;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.TwitterClient;
@@ -53,7 +54,8 @@ public class Pac4jConfigurationFactory {
                 twitterClient(),
                 casClient(jsonConf, vertx, sessionStore),
                 saml2Client(),
-                formClient(baseUrl));
+                formClient(baseUrl),
+                directBasicAuthClient());
         final Config config = new Config(clients);
         config.addAuthorizer(AUTHORIZER_ADMIN, new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
         config.addAuthorizer(AUTHORIZER_CUSTOM, new CustomAuthorizer());
@@ -93,6 +95,10 @@ public class Pac4jConfigurationFactory {
 
     public static FormClient formClient(final String baseUrl) {
         return new FormClient(baseUrl + "/loginForm", new SimpleTestUsernamePasswordAuthenticator());
+    }
+
+    public static IndirectBasicAuthClient directBasicAuthClient() {
+        return new IndirectBasicAuthClient(new SimpleTestUsernamePasswordAuthenticator());
     }
 
 }

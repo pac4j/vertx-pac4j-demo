@@ -60,6 +60,7 @@ public class DemoHandlers {
             final String urlCas;
             final String urlSaml;
             final String urlForm;
+            final String urlBasicAuth;
 
             try {
                 urlFacebook = ((IndirectClient) clients.findClient("FacebookClient")).getRedirectAction(context, false).getLocation();
@@ -67,6 +68,7 @@ public class DemoHandlers {
                 urlCas = ((IndirectClient) clients.findClient("CasClient")).getRedirectAction(context, false).getLocation();
                 urlSaml = ((IndirectClient) clients.findClient("SAML2Client")).getRedirectAction(context, false).getLocation();
                 urlForm = ((IndirectClient) clients.findClient("FormClient")).getRedirectAction(context, false).getLocation();
+                urlBasicAuth = ((IndirectClient) clients.findClient("IndirectBasicAuthClient")).getRedirectAction(context, false).getLocation();
             } catch (RequiresHttpAction requiresHttpAction) {
                 throw new RuntimeException(requiresHttpAction);
             }
@@ -76,6 +78,7 @@ public class DemoHandlers {
             rc.put("urlCas", urlCas);
             rc.put("urlSaml", urlSaml);
             rc.put("urlForm", urlForm);
+            rc.put("urlBasicAuth", urlBasicAuth);
             final UserProfile profile = getUserProfile(rc);
             rc.put("userProfile", profile);
 

@@ -106,6 +106,9 @@ public class DemoServerVerticle extends AbstractVerticle {
                 options));
         router.get(ajaxProtectedUrl).handler(DemoHandlers.formIndexJsonHandler());
 
+        // Indirect basic auth-protected endpoint
+        addProtectedEndpointWithoutAuthorizer("/basicauth/index.html", "IndirectBasicAuthClient", router);
+
         // Cas-authenticated endpoint
         addProtectedEndpointWithoutAuthorizer("/cas/index.html", "CasClient", router);
 
