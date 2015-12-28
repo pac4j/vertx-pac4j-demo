@@ -30,9 +30,11 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.core.profile.UserProfile;
 import org.pac4j.http.client.indirect.FormClient;
+import org.pac4j.jwt.profile.JwtGenerator;
 import org.pac4j.vertx.VertxProfileManager;
 import org.pac4j.vertx.VertxWebContext;
 import org.pac4j.vertx.auth.Pac4jAuthProvider;
+import org.pac4j.vertx.config.Pac4jConfigurationFactory;
 import org.pac4j.vertx.handler.impl.ApplicationLogoutHandler;
 import org.pac4j.vertx.handler.impl.Pac4jAuthHandlerOptions;
 import org.pac4j.vertx.handler.impl.RequiresAuthenticationHandler;
@@ -136,6 +138,28 @@ public class DemoHandlers {
             rc.response().end(json.encodePrettily());
         });
 
+    }
+
+    public static Handler<RoutingContext> jwtGenerator() {
+
+        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
+
+        return rc -> {
+            final UserProfile profile = getUserProfile(rc);
+            final JwtGenerator generator = new JwtGenerator(Pac4jConfigurationFactory.JWT_SALT);
+            String token = "";
+            if (profile != null) {
+                token = generator.generate(profile);
+            }
+            rc.put("token", token);
+            engine.render(rc, "templates/jwt.hbs", res -> {
+                if (res.succeeded()) {
+                    rc.response().end(res.result());
+                } else {
+                    rc.fail(res.cause());
+                }
+            });
+        };
     }
 
     public static Handler<RoutingContext> generateProtectedIndex(final BiConsumer<RoutingContext, Buffer> generatedContentConsumer) {

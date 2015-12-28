@@ -44,6 +44,7 @@ import java.io.File;
 public class Pac4jConfigurationFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(Pac4jConfigurationFactory.class);
+    public final static String JWT_SALT = "12345678901234567890123456789012";
     public static final String AUTHORIZER_ADMIN = "admin";
     public static final String AUTHORIZER_CUSTOM = "custom";
 

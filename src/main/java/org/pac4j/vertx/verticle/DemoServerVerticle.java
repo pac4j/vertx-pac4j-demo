@@ -131,6 +131,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         router.get("/logout").handler(DemoHandlers.logoutHandler());
 
         router.get("/loginForm").handler(DemoHandlers.loginFormHandler(config));
+        router.get("/jwt.html").handler(DemoHandlers.jwtGenerator());
         router.get("/").handler(DemoHandlers.indexHandler(config));
         router.get("/*").handler(StaticHandler.create("static"));
 
