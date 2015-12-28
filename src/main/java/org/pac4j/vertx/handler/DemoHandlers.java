@@ -188,8 +188,6 @@ public class DemoHandlers {
 //
 //                            final StringBuilder sb = new StringBuilder();
 //                            sb.append("<h1>index</h1>");
-//                            sb.append("<a href=\"javascript:ajaxClick();\">Click here to send AJAX request after performing form authentication</a><br />");
-//                            sb.append("<a href=\"basicauth/index.html\">Protected url by basic auth : basicauth/index.html</a><br />");
 //                            sb.append("<a href=\"oidc/index.html\">Protected url by OpenID Connect : oidc/index.html</a><br />");
 //                            sb.append("<br />");
 //                            sb.append("<a href=\"logout\">logout</a>");

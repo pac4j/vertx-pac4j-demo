@@ -115,6 +115,9 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Saml-authenticated endpoint
         addProtectedEndpointWithoutAuthorizer("/saml/index.html", "SAML2Client", router);
 
+        // Requires authentication endpoint without specific authenticator attached
+        addProtectedEndpointWithoutAuthorizer("/protected/index.html", "", router);
+
         router.get("/index.html").handler(DemoHandlers.indexHandler(config));
 
         final CallbackHandler callbackHandler = new CallbackHandler(vertx, config);
