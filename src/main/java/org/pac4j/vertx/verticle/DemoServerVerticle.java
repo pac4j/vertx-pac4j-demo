@@ -122,10 +122,10 @@ public class DemoServerVerticle extends AbstractVerticle {
         addProtectedEndpointWithoutAuthorizer("/protected/index.html", "", router);
 
         // Direct basic auth authentication (web services)
-        addProtectedEndpointWithoutAuthorizer("/dba/index.html", "DirectBasicAuthClient", router);
+        addProtectedEndpointWithoutAuthorizer("/dba/index.html", "DirectBasicAuthClient,ParameterClient", router);
 
         // Direct basic auth then token authentication (web services)
-        addProtectedEndpointWithoutAuthorizer("/rest-jwt/index.html", "DirectBasicAuthClient,ParameterClient", router);
+        addProtectedEndpointWithoutAuthorizer("/rest-jwt/index.html", "ParameterClient", router);
 
         router.get("/index.html").handler(DemoHandlers.indexHandler());
 

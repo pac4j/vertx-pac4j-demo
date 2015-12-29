@@ -30,7 +30,6 @@ import org.pac4j.jwt.profile.JwtGenerator;
 import org.pac4j.vertx.VertxProfileManager;
 import org.pac4j.vertx.VertxWebContext;
 import org.pac4j.vertx.auth.Pac4jAuthProvider;
-import org.pac4j.vertx.config.Pac4jConfigurationFactory;
 import org.pac4j.vertx.handler.impl.ApplicationLogoutHandler;
 import org.pac4j.vertx.handler.impl.Pac4jAuthHandlerOptions;
 import org.pac4j.vertx.handler.impl.RequiresAuthenticationHandler;
