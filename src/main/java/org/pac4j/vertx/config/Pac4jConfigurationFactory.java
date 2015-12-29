@@ -24,9 +24,13 @@ import org.pac4j.cas.client.CasClient;
 import org.pac4j.core.authorization.RequireAnyRoleAuthorizer;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
+import org.pac4j.core.config.ConfigFactory;
+import org.pac4j.http.client.direct.DirectBasicAuthClient;
+import org.pac4j.http.client.direct.ParameterClient;
 import org.pac4j.http.client.indirect.FormClient;
 import org.pac4j.http.client.indirect.IndirectBasicAuthClient;
 import org.pac4j.http.credentials.authenticator.test.SimpleTestUsernamePasswordAuthenticator;
+import org.pac4j.jwt.credentials.authenticator.JwtAuthenticator;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.TwitterClient;
 import org.pac4j.oidc.client.OidcClient;
@@ -41,15 +45,33 @@ import java.io.File;
  * @author Jeremy Prime
  * @since 2.0.0
  */
-public class Pac4jConfigurationFactory {
+public class Pac4jConfigurationFactory implements ConfigFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(Pac4jConfigurationFactory.class);
-    public final static String JWT_SALT = "12345678901234567890123456789012";
     public static final String AUTHORIZER_ADMIN = "admin";
     public static final String AUTHORIZER_CUSTOM = "custom";
 
-    public static Config configFor(final JsonObject jsonConf, final Vertx vertx, final SessionStore sessionStore) {
+    private final JsonObject jsonConf;
+    private final Vertx vertx;
+    private final SessionStore sessionStore;
+
+    public Pac4jConfigurationFactory(final JsonObject jsonConf, final Vertx vertx, final SessionStore sessionStore) {
+        this.jsonConf = jsonConf;
+        this.vertx = vertx;
+        this.sessionStore = sessionStore;
+    }
+
+    public Config build() {
         final String baseUrl = jsonConf.getString("baseUrl");
+
+        // REST authent with JWT for a token passed in the url as the token parameter
+        ParameterClient parameterClient = new ParameterClient("token", new JwtAuthenticator(jsonConf.getString("jwtSalt")));
+        parameterClient.setSupportGetRequest(true);
+        parameterClient.setSupportPostRequest(false);
+
+        // basic auth
+        final DirectBasicAuthClient directBasicAuthClient = new DirectBasicAuthClient(new SimpleTestUsernamePasswordAuthenticator());
+
         final Clients clients = new Clients(baseUrl + "/callback",
                 // oAuth clients
                 facebookClient(jsonConf),
@@ -58,7 +80,9 @@ public class Pac4jConfigurationFactory {
                 saml2Client(),
                 formClient(baseUrl),
                 directBasicAuthClient(),
-                oidcClient());
+                oidcClient(),
+                parameterClient,
+                directBasicAuthClient);
         final Config config = new Config(clients);
         config.addAuthorizer(AUTHORIZER_ADMIN, new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
         config.addAuthorizer(AUTHORIZER_CUSTOM, new CustomAuthorizer());

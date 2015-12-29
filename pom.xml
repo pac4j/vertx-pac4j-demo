@@ -123,6 +123,26 @@
             <artifactId>pac4j-jwt</artifactId>
             <version>${pac4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.pac4j</groupId>
+            <artifactId>pac4j-ldap</artifactId>
+            <version>${pac4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.pac4j</groupId>
+            <artifactId>pac4j-sql</artifactId>
+            <version>${pac4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.pac4j</groupId>
+            <artifactId>pac4j-mongo</artifactId>
+            <version>${pac4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.pac4j</groupId>
+            <artifactId>pac4j-stormpath</artifactId>
+            <version>${pac4j.version}</version>
+        </dependency>
 
         <!-- for web templates -->
         <dependency>

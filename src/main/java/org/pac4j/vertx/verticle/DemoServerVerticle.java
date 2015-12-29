@@ -86,7 +86,7 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         // need to add a json configuration file internally and ensure it's consumed by this verticle
         LOG.info("DemoServerVerticle: config is \n" + config().encodePrettily());
-        config = Pac4jConfigurationFactory.configFor(config(), vertx, sessionStore);
+        config = new Pac4jConfigurationFactory(config(), vertx, sessionStore).build();
 
         // Facebook-authenticated endpoints
         addProtectedEndpointWithoutAuthorizer("/facebook/index.html", "FacebookClient", router);
@@ -121,7 +121,13 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Requires authentication endpoint without specific authenticator attached
         addProtectedEndpointWithoutAuthorizer("/protected/index.html", "", router);
 
-        router.get("/index.html").handler(DemoHandlers.indexHandler(config));
+        // Direct basic auth authentication (web services)
+        addProtectedEndpointWithoutAuthorizer("/dba/index.html", "DirectBasicAuthClient,ParameterClient", router);
+
+        // Direct basic auth then token authentication (web services)
+        addProtectedEndpointWithoutAuthorizer("/rest-jwt/index.html", "ParameterClient", router);
+
+        router.get("/index.html").handler(DemoHandlers.indexHandler());
 
         final CallbackHandler callbackHandler = new CallbackHandler(vertx, config);
         router.get("/callback").handler(callbackHandler); // This will deploy the callback handler
@@ -131,46 +137,13 @@ public class DemoServerVerticle extends AbstractVerticle {
         router.get("/logout").handler(DemoHandlers.logoutHandler());
 
         router.get("/loginForm").handler(DemoHandlers.loginFormHandler(config));
-        router.get("/jwt.html").handler(DemoHandlers.jwtGenerator());
-        router.get("/").handler(DemoHandlers.indexHandler(config));
+        router.get("/jwt.html").handler(DemoHandlers.jwtGenerator(config()));
+        router.get("/").handler(DemoHandlers.indexHandler());
         router.get("/*").handler(StaticHandler.create("static"));
 
         vertx.createHttpServer()
                 .requestHandler(router::accept)
                 .listen(8080);
-
-//
-//        DemoHandlers.AuthenticatedHandler authenticatedHandler = new DemoHandlers.AuthenticatedHandler();
-//        rm.get("/twitter/index.html", new RequiresAuthenticationHandler("TwitterClient", authenticatedHandler,
-//                pac4jHelper, sessionHelper));
-//        rm.get("/form/index.html", new RequiresAuthenticationHandler("FormClient", authenticatedHandler, pac4jHelper,
-//                sessionHelper));
-//        rm.get("/form/index.html.json", new RequiresAuthenticationHandler("FormClient", true,
-//                new DemoHandlers.AuthenticatedJsonHandler(), pac4jHelper, sessionHelper));
-//        rm.get("/basicauth/index.html", new RequiresAuthenticationHandler("BasicAuthClient", authenticatedHandler,
-//                pac4jHelper, sessionHelper));
-//        rm.get("/cas/index.html", new RequiresAuthenticationHandler("CasClient", authenticatedHandler, pac4jHelper,
-//                sessionHelper));
-//        rm.get("/saml2/index.html", new RequiresAuthenticationHandler("Saml2Client", authenticatedHandler, pac4jHelper,
-//                sessionHelper));
-//        rm.get("/oidc/index.html", new RequiresAuthenticationHandler("OidcClient", authenticatedHandler, pac4jHelper,
-//                sessionHelper));
-//
-//        rm.get("/theForm.html", DemoHandlers.formHandler);
-//
-//        Handler<HttpServerRequest> callback = new CallbackHandler(pac4jHelper, sessionHelper);
-//        rm.get("/callback", callback);
-//        rm.post("/callback", callback);
-//
-//        rm.get("/assets/js/app.js", new Handler<HttpServerRequest>() {
-//            @Override
-//            public void handle(HttpServerRequest req) {
-//                req.response().sendFile("./app.js");
-//            }
-//        });
-//
-//        vertx.createHttpServer().requestHandler(HandlerHelper.addFormParsing(rm)).listen(8080, "localhost");
-
     }
 
     private void addProtectedEndpointWithoutAuthorizer(final String url, final String clientNames, final Router router) {

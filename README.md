@@ -1,29 +1,15 @@
-Please note that branch 1.0.0 of this code is the version for use with vertx-pac4j v1 and vert.x v 2.
-This is also work in progress and several authenticators and endpoints are stil to be added
+<p align="center">
+  <img src="https://pac4j.github.io/pac4j/img/logo-vertx.png" width="300" />
+</p>
 
-Master is for use with vertx-pac4j 2 and vert.x 3 onwards.
+This `vertx-pac4j-demo` project is a Vertx web application to test the [vertx-pac4j](https://github.com/pac4j/vertx-pac4j) security library with various authentication mechanisms: Facebook, Twitter, form, basic auth, CAS, SAML, OpenID Connect, JWT...
 
-## What is this project ?
+## Start & test
 
-This **vertx-pac4j-demo** project is a Java web demo to test the [vertx-pac4j library](https://github.com/pac4j/vertx-pac4j) with Facebook, Twitter, form authentication, basic auth, CAS...  
-The **vertx-pac4j** library is built to:
-
-- delegate authentication to a provider and be authenticated back in the protected application with a complete user profile retrieved from the provider
-- support direct authenticated calls.
-
-
-## Quick start & test
-
-To build the demo:
+Build the project and launch the Vertx web app on [http://localhost:8080](http://localhost:8080):
 
     cd vertx-pac4j-demo
-    mvn package
-
-You can then run the demo with:
-
+    mvn clean package
     java -jar target/vertx-pac4j-demo-2.0.0-SNAPSHOT-fat.jar
 
-Browse the demo on *http://localhost:8080*
-
-To test the CAS support, you need to start a CAS server on port 8888. 
-Use the following demo: [cas-overlay-demo](https://github.com/leleuj/cas-overlay-demo) with the option: -Djetty.port=8888.
+To test, you can call a protected url by clicking on the "Protected url by **xxx**" link, which will start the authentication process with the **xxx** provider.
