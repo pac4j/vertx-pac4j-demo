@@ -12,26 +12,12 @@
 <a href="protected/index.html">Protected url: protected/index.html</a> (won't start any login process)<br />
 <br />
 <a href="jwt.html">Generate a JWT token</a><br />
-
-<hr/>
+<a href="/dba/index.html">Protected url by DirectBasicAuthClient: /dba/index.html</a> (POST the <em>Authorization</em> header with value: <em>Basic amxlbGV1OmpsZWxldQ==</em>) then by <a href="/dba/index.html">ParameterClient: /dba/index.html</a> (with request parameter: token=<em>jwt_generated_token</em>)<br />
+<a href="/rest-jwt/index.html">Protected url by ParameterClient: /rest-jwt/index.html</a> (with request parameter: token=<em>jwt_generated_token</em>)<br />
 <br />
 <a href="/logout?url=/">logout</a>
 <br /><br />profile : {{userProfile}}
 <br /><br />
-<hr />
-
-<a href="{{urlFacebook}}">Authenticate with Facebook</a><br />
-<a href="{{urlTwitter}}">Authenticate with Twitter</a><br />
-<a href="{{urlForm}}">Authenticate with form</a><br />
-<a href="{{urlBasicAuth}}">Authenticate with basic auth</a><br />
-<a href="{{urlCas}}">Authenticate with CAS</a><br />
-<a href="{{urlSaml}}">Authenticate with SAML</a><br />
-<a href="{{urlOidc}}">Authenticate with OpenID Connect</a><br />
-
-
-<h2>Find the source code on <a target="_blank" href="https://github.com/pac4j/vertx-pac4j-demo">https://github.com/pac4j/vertx-pac4j-demo</a><br/>
-    <br />
-</h2>
 
 <!-- Link to Google CDN's jQuery; fall back to local -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>

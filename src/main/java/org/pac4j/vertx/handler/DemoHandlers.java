@@ -21,11 +21,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.HandlebarsTemplateEngine;
-import org.pac4j.core.client.Clients;
-import org.pac4j.core.client.IndirectClient;
 import org.pac4j.core.config.Config;
-import org.pac4j.core.context.WebContext;
-import org.pac4j.core.exception.RequiresHttpAction;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.core.profile.UserProfile;
@@ -50,40 +46,11 @@ import java.util.function.BiConsumer;
  */
 public class DemoHandlers {
 
-    public static Handler<RoutingContext> indexHandler(final Config config) {
+    public static Handler<RoutingContext> indexHandler() {
         final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
         return rc -> {
 // we define a hardcoded title for our application
             rc.put("name", "Vert.x Web");
-            final Clients clients = config.getClients();
-            final WebContext context = new VertxWebContext(rc);
-            final String urlFacebook;
-            final String urlTwitter;
-            final String urlCas;
-            final String urlSaml;
-            final String urlForm;
-            final String urlBasicAuth;
-            final String urlOidc;
-
-            try {
-                urlFacebook = ((IndirectClient) clients.findClient("FacebookClient")).getRedirectAction(context, false).getLocation();
-                urlTwitter = ((IndirectClient) clients.findClient("TwitterClient")).getRedirectAction(context, false).getLocation();
-                urlCas = ((IndirectClient) clients.findClient("CasClient")).getRedirectAction(context, false).getLocation();
-                urlOidc = ((IndirectClient) clients.findClient("OidcClient")).getRedirectAction(context, false).getLocation();
-                urlSaml = ((IndirectClient) clients.findClient("SAML2Client")).getRedirectAction(context, false).getLocation();
-                urlForm = ((IndirectClient) clients.findClient("FormClient")).getRedirectAction(context, false).getLocation();
-                urlBasicAuth = ((IndirectClient) clients.findClient("IndirectBasicAuthClient")).getRedirectAction(context, false).getLocation();
-            } catch (RequiresHttpAction requiresHttpAction) {
-                throw new RuntimeException(requiresHttpAction);
-            }
-
-            rc.put("urlFacebook", urlFacebook);
-            rc.put("urlTwitter", urlTwitter);
-            rc.put("urlCas", urlCas);
-            rc.put("urlSaml", urlSaml);
-            rc.put("urlForm", urlForm);
-            rc.put("urlBasicAuth", urlBasicAuth);
-            rc.put("urlOidc", urlOidc);
             final UserProfile profile = getUserProfile(rc);
             rc.put("userProfile", profile);
 
@@ -140,13 +107,13 @@ public class DemoHandlers {
 
     }
 
-    public static Handler<RoutingContext> jwtGenerator() {
+    public static Handler<RoutingContext> jwtGenerator(final JsonObject jsonConf) {
 
         final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
 
         return rc -> {
             final UserProfile profile = getUserProfile(rc);
-            final JwtGenerator generator = new JwtGenerator(Pac4jConfigurationFactory.JWT_SALT);
+            final JwtGenerator generator = new JwtGenerator(jsonConf.getString("jwtSalt"));
             String token = "";
             if (profile != null) {
                 token = generator.generate(profile);
@@ -185,106 +152,4 @@ public class DemoHandlers {
         final ProfileManager<CommonProfile> profileManager = new VertxProfileManager<>(new VertxWebContext(rc));
         return profileManager.get(true);
     }
-
-//    public static class IndexHandler extends SessionAwareHandler {
-//
-//        private final Pac4jHelper pac4jHelper;
-//
-//        public IndexHandler(Pac4jHelper pac4jHelper, SessionHelper sessionHelper) {
-//            super(sessionHelper);
-//            this.pac4jHelper = pac4jHelper;
-//        }
-//
-//        @Override
-//        protected void doHandle(final HttpServerRequest req, final String sessionId, final JsonObject sessionAttributes) {
-//            pac4jHelper.getRedirectUrls(
-//                    req,
-//                    sessionAttributes,
-//                    new Handler<Message<JsonObject>>() {
-//
-//                        @Override
-//                        public void handle(Message<JsonObject> event) {
-//                            JsonObject response = event.body();
-//                            if (pac4jHelper.isErrorMessage(response)) {
-//                                pac4jHelper.sendErrorResponse(req.response(), response);
-//                                return;
-//                            }
-//
-//                            JsonObject attributes = pac4jHelper.getSessionAttributes(response);
-//                            attributes.putString(HttpConstants.REQUESTED_URL, null);
-//
-//                            final StringBuilder sb = new StringBuilder();
-//                            sb.append("<h1>index</h1>");
-//                            sb.append("<a href=\"oidc/index.html\">Protected url by OpenID Connect : oidc/index.html</a><br />");
-//                            sb.append("<br />");
-//                            sb.append("<a href=\"logout\">logout</a>");
-//                            sb.append("<br /><br />");
-//                            sb.append("profile : ");
-//                            sb.append(pac4jHelper.getUserProfileFromSession(attributes));
-//                            sb.append("<br /><br />");
-//                            sb.append("<hr />");
-//                            sb.append("<a href=\"").append(response.getString("BasicAuthClient"))
-//                                    .append("\">Authenticate with basic auth</a><br />");
-//                            sb.append("<a href=\"").append(response.getString("OidcClient"))
-//                                    .append("\">Authenticate with OpenID Connect</a><br />");
-//                            sb.append("<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js\"></script>");
-//                            sb.append("<script src=\"assets/js/app.js\"></script>");
-//
-//                            saveSessionAttributes(sessionId, attributes, new Handler<JsonObject>() {
-//                                @Override
-//                                public void handle(JsonObject event) {
-//                                    HttpResponseHelper.ok(req, sb.toString());
-//                                }
-//                            });
-//
-//                        }
-//                    }, "FacebookClient", "FacebookClient", "TwitterClient", "FormClient", "BasicAuthClient",
-//                    "CasClient",
-//                    "Saml2Client", "OidcClient");
-//
-//        }
-//    };
-//
-//    public static class AuthenticatedHandler implements Handler<HttpServerRequest> {
-//
-//        @Override
-//        public void handle(HttpServerRequest req) {
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("<h1>protected area</h1>");
-//            sb.append("<a href=\"..\">Back</a><br />");
-//            sb.append("<br /><br />");
-//            sb.append("profile : ");
-//            sb.append(((AuthHttpServerRequest) req).getProfile());
-//            sb.append("<br />");
-//            HttpResponseHelper.ok(req, sb.toString());
-//        }
-//    };
-//
-//    public static class AuthenticatedJsonHandler implements Handler<HttpServerRequest> {
-//
-//        @Override
-//        public void handle(final HttpServerRequest req) {
-//            req.response().headers().add("Content-Type", "application/json");
-//            UserProfile profile = ((AuthHttpServerRequest) req).getProfile();
-//            HttpResponseHelper.ok(req, new JsonObject().putString("id", profile.getId()).toString());
-//        }
-//    };
-//
-//    public static Handler<HttpServerRequest> formHandler = new Handler<HttpServerRequest>() {
-//        @Override
-//        public void handle(HttpServerRequest req) {
-//            String callbackUrl = "http://localhost:8080/callback?client_name=FormClient";
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("<form action=\"").append(callbackUrl).append("\" method=\"POST\">");
-//            sb.append("<input type=\"text\" name=\"username\" value=\"\" />");
-//            sb.append("<p />");
-//            sb.append("<input type=\"password\" name=\"password\" value=\"\" />");
-//            sb.append("<p />");
-//            sb.append("<input type=\"submit\" name=\"submit\" value=\"Submit\" />");
-//            sb.append("</form>");
-//
-//            HttpResponseHelper.ok(req, sb.toString());
-//        }
-//    };
-
 }
