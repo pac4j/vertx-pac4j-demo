@@ -62,9 +62,11 @@ public class DemoServerVerticle extends AbstractVerticle {
         router.route().handler(UserSessionHandler.create(authProvider));
 
         router.route().failureHandler(rc -> {
-            rc.response().setStatusCode(rc.statusCode());
+            final int statusCode = rc.statusCode();
+            rc.response().setStatusCode(statusCode > 0 ? statusCode : 500); // use status code 500 in the event that vert.x hasn't set one,
+            // as we've failed for an unspecified reason - which implies internal server error
 
-            switch (rc.statusCode()) {
+            switch (rc.response().getStatusCode()) {
 
                 case HttpConstants.FORBIDDEN:
                     rc.response().sendFile("static/error403.html");
@@ -76,6 +78,7 @@ public class DemoServerVerticle extends AbstractVerticle {
 
                 case 500:
                     rc.response().sendFile("static/error500.html");
+                    break;
 
                 default:
                     rc.response().end();
@@ -123,6 +126,11 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         // Direct basic auth authentication (web services)
         addProtectedEndpointWithoutAuthorizer("/dba/index.html", "DirectBasicAuthClient,ParameterClient", router);
+        Pac4jAuthHandlerOptions dbaEndpointOptions = new Pac4jAuthHandlerOptions().withClientName("DirectBasicAuthClient,ParameterClient");
+        router.post("/dba/index.html").handler(DemoHandlers.authHandler(vertx, config, authProvider,
+                dbaEndpointOptions));
+        router.post("/dba/index.html").handler(protectedIndexRenderer);
+
 
         // Direct basic auth then token authentication (web services)
         addProtectedEndpointWithoutAuthorizer("/rest-jwt/index.html", "ParameterClient", router);
