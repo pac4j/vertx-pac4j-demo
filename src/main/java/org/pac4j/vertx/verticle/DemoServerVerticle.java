@@ -45,6 +45,8 @@ import org.pac4j.vertx.handler.impl.Pac4jAuthHandlerOptions;
  */
 public class DemoServerVerticle extends AbstractVerticle {
 
+    protected static final String SESSION_HANDLER_REGEXP = "\\/((?!dba\\/|rest-jwt\\/)).*";
+
     private static final Logger LOG = LoggerFactory.getLogger(DemoServerVerticle.class);
     private final Handler<RoutingContext> protectedIndexRenderer = DemoHandlers.protectedIndexHandler();
     private final Pac4jAuthProvider authProvider = new Pac4jAuthProvider(); // We don't need to instantiate this on demand
@@ -57,9 +59,10 @@ public class DemoServerVerticle extends AbstractVerticle {
         SessionStore sessionStore = LocalSessionStore.create(vertx);
         SessionHandler sessionHandler = SessionHandler.create(sessionStore);
 
-        router.route().handler(io.vertx.ext.web.handler.CookieHandler.create());
-        router.route().handler(sessionHandler);
-        router.route().handler(UserSessionHandler.create(authProvider));
+        // Only use the following handlers where we want to use sessions - this is enforced by the regexp
+        router.routeWithRegex(SESSION_HANDLER_REGEXP).handler(io.vertx.ext.web.handler.CookieHandler.create());
+        router.routeWithRegex(SESSION_HANDLER_REGEXP).handler(sessionHandler);
+        router.routeWithRegex(SESSION_HANDLER_REGEXP).handler(UserSessionHandler.create(authProvider));
 
         router.route().failureHandler(rc -> {
             final int statusCode = rc.statusCode();
