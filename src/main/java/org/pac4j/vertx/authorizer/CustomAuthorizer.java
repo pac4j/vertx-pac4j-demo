@@ -16,26 +16,29 @@
 package org.pac4j.vertx.authorizer;
 
 import org.apache.commons.lang3.StringUtils;
-import org.pac4j.core.authorization.Authorizer;
+import org.pac4j.core.authorization.authorizer.ProfileAuthorizer;
 import org.pac4j.core.context.WebContext;
-import org.pac4j.core.profile.UserProfile;
-import org.pac4j.http.profile.HttpProfile;
+import org.pac4j.core.exception.HttpAction;
+import org.pac4j.core.profile.CommonProfile;
+
+import java.util.List;
 
 /**
  * @author Jeremy Prime
  * @since 2.0.0
  */
-public class CustomAuthorizer implements Authorizer {
+public class CustomAuthorizer extends ProfileAuthorizer<CommonProfile> {
 
-    public boolean isAuthorized(WebContext context, UserProfile profile) {
+    @Override
+    protected boolean isProfileAuthorized(WebContext context, CommonProfile profile) throws HttpAction {
         if (profile == null) {
             return false;
         }
-        if (!(profile instanceof HttpProfile)) {
-            return false;
-        }
-        final HttpProfile httpProfile = (HttpProfile) profile;
-        final String username = httpProfile.getUsername();
-        return StringUtils.startsWith(username, "jle");
+        return StringUtils.startsWith(profile.getUsername(), "jle");
+    }
+
+    @Override
+    public boolean isAuthorized(WebContext context, List<CommonProfile> profiles) throws HttpAction {
+        return isAnyAuthorized(context, profiles);
     }
 }

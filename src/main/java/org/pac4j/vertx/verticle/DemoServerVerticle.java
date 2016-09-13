@@ -34,7 +34,8 @@ import org.pac4j.vertx.auth.Pac4jAuthProvider;
 import org.pac4j.vertx.config.Pac4jConfigurationFactory;
 import org.pac4j.vertx.handler.DemoHandlers;
 import org.pac4j.vertx.handler.impl.CallbackHandler;
-import org.pac4j.vertx.handler.impl.Pac4jAuthHandlerOptions;
+import org.pac4j.vertx.handler.impl.CallbackHandlerOptions;
+import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
 
 /**
  * Stateful server example.
@@ -106,7 +107,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         addProtectedEndpointWithoutAuthorizer("/form/index.html", "FormClient", router);
 
         // Form-protected AJAX endpoint
-        Pac4jAuthHandlerOptions options = new Pac4jAuthHandlerOptions().withClientName("FormClient");
+        SecurityHandlerOptions options = new SecurityHandlerOptions().withClients("FormClient");
         final String ajaxProtectedUrl = "/form/index.html.json";
         router.get(ajaxProtectedUrl).handler(DemoHandlers.authHandler(vertx, config, authProvider,
                 options));
@@ -129,7 +130,7 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         // Direct basic auth authentication (web services)
         addProtectedEndpointWithoutAuthorizer("/dba/index.html", "DirectBasicAuthClient,ParameterClient", router);
-        Pac4jAuthHandlerOptions dbaEndpointOptions = new Pac4jAuthHandlerOptions().withClientName("DirectBasicAuthClient,ParameterClient");
+        SecurityHandlerOptions dbaEndpointOptions = new SecurityHandlerOptions().withClients("DirectBasicAuthClient,ParameterClient");
         router.post("/dba/index.html").handler(DemoHandlers.authHandler(vertx, config, authProvider,
                 dbaEndpointOptions));
         router.post("/dba/index.html").handler(protectedIndexRenderer);
@@ -140,7 +141,8 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         router.get("/index.html").handler(DemoHandlers.indexHandler());
 
-        final CallbackHandler callbackHandler = new CallbackHandler(vertx, config);
+        final CallbackHandlerOptions callbackHandlerOptions = new CallbackHandlerOptions();
+        final CallbackHandler callbackHandler = new CallbackHandler(vertx, config, callbackHandlerOptions);
         router.get("/callback").handler(callbackHandler); // This will deploy the callback handler
         router.post("/callback").handler(BodyHandler.create().setMergeFormAttributes(true));
         router.post("/callback").handler(callbackHandler);
@@ -162,9 +164,9 @@ public class DemoServerVerticle extends AbstractVerticle {
     }
 
     private void addProtectedEndpoint(final String url, final String clientNames, final String authName, final Router router) {
-        Pac4jAuthHandlerOptions options = new Pac4jAuthHandlerOptions().withClientName(clientNames);
+        SecurityHandlerOptions options = new SecurityHandlerOptions().withClients(clientNames);
         if (authName != null) {
-            options = options.withAuthorizerName(authName);
+            options = options.withAuthorizers(authName);
         }
         router.get(url).handler(DemoHandlers.authHandler(vertx, config, authProvider,
                 options));

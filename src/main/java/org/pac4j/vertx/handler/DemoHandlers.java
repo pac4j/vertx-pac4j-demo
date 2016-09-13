@@ -31,8 +31,8 @@ import org.pac4j.vertx.VertxProfileManager;
 import org.pac4j.vertx.VertxWebContext;
 import org.pac4j.vertx.auth.Pac4jAuthProvider;
 import org.pac4j.vertx.handler.impl.ApplicationLogoutHandler;
-import org.pac4j.vertx.handler.impl.Pac4jAuthHandlerOptions;
-import org.pac4j.vertx.handler.impl.RequiresAuthenticationHandler;
+import org.pac4j.vertx.handler.impl.SecurityHandler;
+import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
 
 import java.util.function.BiConsumer;
 
@@ -67,8 +67,8 @@ public class DemoHandlers {
     public static Handler<RoutingContext> authHandler(final Vertx vertx,
                                                       final Config config,
                                                       final Pac4jAuthProvider provider,
-                                                      final Pac4jAuthHandlerOptions options) {
-        return new RequiresAuthenticationHandler(vertx, config, provider, options);
+                                                      final SecurityHandlerOptions options) {
+        return new SecurityHandler(vertx, config, provider, options);
     }
 
     public static Handler<RoutingContext> logoutHandler() {
@@ -111,7 +111,7 @@ public class DemoHandlers {
         final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
 
         return rc -> {
-            final UserProfile profile = getUserProfile(rc);
+            final CommonProfile profile = getUserProfile(rc);
             final JwtGenerator generator = new JwtGenerator(jsonConf.getString("jwtSalt"));
             String token = "";
             if (profile != null) {
@@ -149,6 +149,6 @@ public class DemoHandlers {
 
     private static CommonProfile getUserProfile(final RoutingContext rc) {
         final ProfileManager<CommonProfile> profileManager = new VertxProfileManager<>(new VertxWebContext(rc));
-        return profileManager.get(true);
+        return profileManager.get(true).orElse(null);
     }
 }

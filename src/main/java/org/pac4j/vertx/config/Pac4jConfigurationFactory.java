@@ -21,7 +21,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.sstore.SessionStore;
 import org.pac4j.cas.client.CasClient;
-import org.pac4j.core.authorization.RequireAnyRoleAuthorizer;
+import org.pac4j.core.authorization.authorizer.RequireAnyRoleAuthorizer;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.config.ConfigFactory;
