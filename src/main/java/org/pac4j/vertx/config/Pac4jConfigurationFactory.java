@@ -41,6 +41,8 @@ import org.pac4j.vertx.cas.VertxLocalSharedDataLogoutHandler;
 
 import java.io.File;
 
+import static org.pac4j.cas.config.CasProtocol.CAS20;
+
 /**
  * @author Jeremy Prime
  * @since 2.0.0
@@ -105,13 +107,13 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
         final String casUrl = jsonConf.getString("casUrl");
         final CasClient casClient = new CasClient();
         casClient.setLogoutHandler(new VertxLocalSharedDataLogoutHandler(vertx, sessionStore));
-        casClient.setCasProtocol(CasClient.CasProtocol.CAS20);
+        casClient.setCasProtocol(CAS20);
         casClient.setCasLoginUrl(casUrl);
         return casClient;
     }
 
     public static SAML2Client saml2Client() {
-        final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration("resource:samlKeystore.jks",
+        final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration("samlKeystore/samlKeystore.jks",
                 "pac4j-demo-passwd", "pac4j-demo-passwd", "resource:openidp-feide.xml");
         cfg.setMaximumAuthenticationLifetime(3600);
         cfg.setServiceProviderEntityId("urn:mace:saml:vertx-demo.pac4j.org");
