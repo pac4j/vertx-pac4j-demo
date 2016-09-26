@@ -147,7 +147,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         router.post("/callback").handler(BodyHandler.create().setMergeFormAttributes(true));
         router.post("/callback").handler(callbackHandler);
 
-        router.get("/logout").handler(DemoHandlers.logoutHandler());
+        router.get("/logout").handler(DemoHandlers.logoutHandler(vertx, config));
 
         router.get("/loginForm").handler(DemoHandlers.loginFormHandler(config));
         router.get("/jwt.html").handler(DemoHandlers.jwtGenerator(config()));

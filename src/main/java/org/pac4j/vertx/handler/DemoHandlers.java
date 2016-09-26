@@ -31,6 +31,7 @@ import org.pac4j.vertx.VertxProfileManager;
 import org.pac4j.vertx.VertxWebContext;
 import org.pac4j.vertx.auth.Pac4jAuthProvider;
 import org.pac4j.vertx.handler.impl.ApplicationLogoutHandler;
+import org.pac4j.vertx.handler.impl.ApplicationLogoutHandlerOptions;
 import org.pac4j.vertx.handler.impl.SecurityHandler;
 import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
 
@@ -71,8 +72,8 @@ public class DemoHandlers {
         return new SecurityHandler(vertx, config, provider, options);
     }
 
-    public static Handler<RoutingContext> logoutHandler() {
-        return new ApplicationLogoutHandler();
+    public static Handler<RoutingContext> logoutHandler(final Vertx vertx, final Config config) {
+        return new ApplicationLogoutHandler(vertx, new ApplicationLogoutHandlerOptions(), config);
     }
 
     public static Handler<RoutingContext> protectedIndexHandler() {
