@@ -37,6 +37,9 @@ import org.pac4j.vertx.handler.impl.CallbackHandler;
 import org.pac4j.vertx.handler.impl.CallbackHandlerOptions;
 import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
 
+import static io.vertx.core.http.HttpHeaders.TEXT_HTML;
+import static org.pac4j.vertx.handler.DemoHandlers.setContentTypeHandler;
+
 /**
  * Stateful server example.
  * 
@@ -111,6 +114,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         final String ajaxProtectedUrl = "/form/index.html.json";
         router.get(ajaxProtectedUrl).handler(DemoHandlers.authHandler(vertx, config, authProvider,
                 options));
+        router.get(ajaxProtectedUrl).handler(setContentTypeHandler("application/json"));
         router.get(ajaxProtectedUrl).handler(DemoHandlers.formIndexJsonHandler());
 
         // Indirect basic auth-protected endpoint
@@ -139,6 +143,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Direct basic auth then token authentication (web services)
         addProtectedEndpointWithoutAuthorizer("/rest-jwt/index.html", "ParameterClient", router);
 
+        router.get("/index.html").handler(setContentTypeHandler(TEXT_HTML));
         router.get("/index.html").handler(DemoHandlers.indexHandler());
 
         final CallbackHandlerOptions callbackHandlerOptions = new CallbackHandlerOptions();
@@ -150,8 +155,14 @@ public class DemoServerVerticle extends AbstractVerticle {
         router.get("/logout").handler(DemoHandlers.logoutHandler(vertx, config));
 
         router.get("/loginForm").handler(DemoHandlers.loginFormHandler(config));
+
+        router.get("/jwt.html").handler(setContentTypeHandler(TEXT_HTML));
         router.get("/jwt.html").handler(DemoHandlers.jwtGenerator(config()));
+
+        router.get("/").handler(setContentTypeHandler(TEXT_HTML));
         router.get("/").handler(DemoHandlers.indexHandler());
+
+        router.get("/*").handler(setContentTypeHandler(TEXT_HTML));
         router.get("/*").handler(StaticHandler.create("static"));
 
         vertx.createHttpServer()
@@ -170,6 +181,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         }
         router.get(url).handler(DemoHandlers.authHandler(vertx, config, authProvider,
                 options));
+        router.get(url).handler(setContentTypeHandler(TEXT_HTML));
         router.get(url).handler(protectedIndexRenderer);
     }
 

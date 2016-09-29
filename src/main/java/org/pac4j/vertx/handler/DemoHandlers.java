@@ -37,6 +37,8 @@ import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
 
 import java.util.function.BiConsumer;
 
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+
 /**
  * A collection of basic handlers printing dynamic html for the demo application.
  * 
@@ -62,6 +64,13 @@ public class DemoHandlers {
                     rc.fail(res.cause());
                 }
             });
+        };
+    }
+
+    public static Handler<RoutingContext> setContentTypeHandler(final CharSequence contentType) {
+        return rc -> {
+            rc.response().putHeader(CONTENT_TYPE, contentType);
+            rc.next();
         };
     }
 
