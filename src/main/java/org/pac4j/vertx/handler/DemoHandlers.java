@@ -149,7 +149,7 @@ public class DemoHandlers {
     }
 
     private static CommonProfile getUserProfile(final RoutingContext rc) {
-        final ProfileManager<CommonProfile> profileManager = new VertxProfileManager<>(new VertxWebContext(rc));
+        final ProfileManager<CommonProfile> profileManager = new VertxProfileManager(new VertxWebContext(rc));
         return profileManager.get(true).orElse(null);
     }
 }
