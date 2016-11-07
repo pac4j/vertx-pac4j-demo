@@ -1,7 +1,7 @@
 <h1>index</h1>
 <a href="facebook/index.html">Protected url by Facebook : facebook/index.html</a><br />
 <a href="facebookadmin/index.html">Protected url by Facebook with ROLE_ADMIN: facebookadmin/index.html</a><br />
-<a href="facebookcustom/index.html">Protected url by Facebook with custom authorizer (= must be a <em>HttpProfile</em> where the username starts with "jle"): facebookcustom/index.html</a><br />
+<a href="facebookcustom/index.html">Protected url by Facebook with custom authorizer (= must be a <em>CommonProfile</em> where the username starts with "jle"): facebookcustom/index.html</a> (login with form or basic authentication before with jle* username)<br />
 <a href="twitter/index.html">Protected url by Twitter: twitter/index.html</a> or <a href="twitter/index.html?client_name=FacebookClient">by Facebook: twitter/index.html?client_name=FacebookClient</a><br />
 <a href="form/index.html">Protected url by form authentication : form/index.html</a> (use login = pwd)<br />
 <a href="javascript:ajaxClick();">Click here to send AJAX request after performing form authentication</a><br />
@@ -16,7 +16,7 @@
 <a href="/rest-jwt/index.html">Protected url by ParameterClient: /rest-jwt/index.html</a> (with request parameter: token=<em>jwt_generated_token</em>)<br />
 <br />
 <a href="/logout?url=/">logout</a>
-<br /><br />profile : {{userProfile}}
+<br /><br />profiles: {{userProfiles}}
 <br /><br />
 
 <!-- Link to Google CDN's jQuery; fall back to local -->

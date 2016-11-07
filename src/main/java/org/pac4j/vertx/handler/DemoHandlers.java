@@ -24,7 +24,7 @@ import io.vertx.ext.web.templ.HandlebarsTemplateEngine;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
-import org.pac4j.core.profile.UserProfile;
+import org.pac4j.core.util.CommonHelper;
 import org.pac4j.http.client.indirect.FormClient;
 import org.pac4j.jwt.profile.JwtGenerator;
 import org.pac4j.vertx.VertxProfileManager;
@@ -35,6 +35,7 @@ import org.pac4j.vertx.handler.impl.ApplicationLogoutHandlerOptions;
 import org.pac4j.vertx.handler.impl.SecurityHandler;
 import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
@@ -53,8 +54,8 @@ public class DemoHandlers {
         return rc -> {
 // we define a hardcoded title for our application
             rc.put("name", "Vert.x Web");
-            final UserProfile profile = getUserProfile(rc);
-            rc.put("userProfile", profile);
+            final List<CommonProfile> profile = getUserProfiles(rc);
+            rc.put("userProfiles", profile);
 
             // and now delegate to the engine to render it.
             engine.render(rc, "templates/index.hbs", res -> {
@@ -121,11 +122,11 @@ public class DemoHandlers {
         final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
 
         return rc -> {
-            final CommonProfile profile = getUserProfile(rc);
+            final List<CommonProfile> profiles = getUserProfiles(rc);
             final JwtGenerator generator = new JwtGenerator(jsonConf.getString("jwtSalt"));
             String token = "";
-            if (profile != null) {
-                token = generator.generate(profile);
+            if (CommonHelper.isNotEmpty(profiles)) {
+                token = generator.generate(profiles.get(0));
             }
             rc.put("token", token);
             engine.render(rc, "templates/jwt.hbs", res -> {
@@ -144,8 +145,8 @@ public class DemoHandlers {
         return rc -> {
             // and now delegate to the engine to render it.
 
-            final UserProfile profile = getUserProfile(rc);
-            rc.put("userProfile", profile);
+            final List<CommonProfile> profile = getUserProfiles(rc);
+            rc.put("userProfiles", profile);
 
             engine.render(rc, "templates/protectedIndex.hbs", res -> {
                 if (res.succeeded()) {
@@ -157,8 +158,8 @@ public class DemoHandlers {
         };
     }
 
-    private static CommonProfile getUserProfile(final RoutingContext rc) {
+    private static List<CommonProfile> getUserProfiles(final RoutingContext rc) {
         final ProfileManager<CommonProfile> profileManager = new VertxProfileManager(new VertxWebContext(rc));
-        return profileManager.get(true).orElse(null);
+        return profileManager.getAll(true);
     }
 }
