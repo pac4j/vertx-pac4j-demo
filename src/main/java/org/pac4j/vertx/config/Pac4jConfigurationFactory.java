@@ -113,11 +113,11 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
     }
 
     public static SAML2Client saml2Client() {
-        final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration("samlKeystore/samlKeystore.jks",
-                "pac4j-demo-passwd", "pac4j-demo-passwd", "resource:openidp-feide.xml");
+        final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration("samlConfig/samlKeystore.jks",
+                "pac4j-demo-passwd", "pac4j-demo-passwd", "samlConfig/openidp-feide.xml");
         cfg.setMaximumAuthenticationLifetime(3600);
         cfg.setServiceProviderEntityId("urn:mace:saml:vertx-demo.pac4j.org");
-        cfg.setServiceProviderMetadataPath(new File("target", "sp-metadata.xml").getAbsolutePath());
+        cfg.setServiceProviderMetadataPath(new File("sp-metadata.xml").getAbsolutePath());
         return new SAML2Client(cfg);
     }
 
