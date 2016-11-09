@@ -36,8 +36,10 @@ import org.pac4j.vertx.handler.DemoHandlers;
 import org.pac4j.vertx.handler.impl.CallbackHandler;
 import org.pac4j.vertx.handler.impl.CallbackHandlerOptions;
 import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
+import org.pac4j.vertx.http.DefaultHttpActionAdapter;
 
 import static io.vertx.core.http.HttpHeaders.TEXT_HTML;
+import static org.pac4j.vertx.handler.DemoHandlers.forceLogin;
 import static org.pac4j.vertx.handler.DemoHandlers.setContentTypeHandler;
 
 /**
@@ -97,6 +99,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         // need to add a json configuration file internally and ensure it's consumed by this verticle
         LOG.info("DemoServerVerticle: config is \n" + config().encodePrettily());
         config = new Pac4jConfigurationFactory(config(), vertx, sessionStore).build();
+        config.setHttpActionAdapter(new DefaultHttpActionAdapter());
 
         // Facebook-authenticated endpoints
         addProtectedEndpointWithoutAuthorizer("/facebook/index.html", "FacebookClient", router);
@@ -146,11 +149,15 @@ public class DemoServerVerticle extends AbstractVerticle {
         router.get("/index.html").handler(setContentTypeHandler(TEXT_HTML));
         router.get("/index.html").handler(DemoHandlers.indexHandler());
 
-        final CallbackHandlerOptions callbackHandlerOptions = new CallbackHandlerOptions();
+        final CallbackHandlerOptions callbackHandlerOptions = new CallbackHandlerOptions()
+                .setDefaultUrl("/")
+                .setMultiProfile(true);
         final CallbackHandler callbackHandler = new CallbackHandler(vertx, config, callbackHandlerOptions);
         router.get("/callback").handler(callbackHandler); // This will deploy the callback handler
         router.post("/callback").handler(BodyHandler.create().setMergeFormAttributes(true));
         router.post("/callback").handler(callbackHandler);
+
+        router.get("/forceLogin").handler(forceLogin(config));
 
         router.get("/logout").handler(DemoHandlers.logoutHandler(vertx, config));
 

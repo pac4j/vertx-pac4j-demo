@@ -21,7 +21,10 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.HandlebarsTemplateEngine;
+import org.pac4j.core.client.Client;
+import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
+import org.pac4j.core.exception.HttpAction;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.core.util.CommonHelper;
@@ -156,6 +159,20 @@ public class DemoHandlers {
                 }
             });
         };
+    }
+
+    public static Handler<RoutingContext> forceLogin(final Config config) {
+        return rc -> {
+            final VertxWebContext context = new VertxWebContext(rc);
+            final Client client = config.getClients().findClient(context.getRequestParameter(Clients.DEFAULT_CLIENT_NAME_PARAMETER));
+            try {
+                final HttpAction action = client.redirect(context);
+                config.getHttpActionAdapter().adapt(action.getCode(), context);
+            } catch (HttpAction httpAction) {
+                rc.fail(httpAction);
+            }
+        };
+
     }
 
     private static List<CommonProfile> getUserProfiles(final RoutingContext rc) {
