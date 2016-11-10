@@ -115,11 +115,22 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
     }
 
     public static SAML2Client saml2Client() {
+
         final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration("samlConfig/samlKeystore.jks",
-                "pac4j-demo-passwd", "pac4j-demo-passwd", "samlConfig/openidp-feide.xml");
+                "pac4j-demo-passwd",
+                "pac4j-demo-passwd",
+                "samlConfig/metadata-okta.xml");
         cfg.setMaximumAuthenticationLifetime(3600);
-        cfg.setServiceProviderEntityId("urn:mace:saml:vertx-demo.pac4j.org");
-        cfg.setServiceProviderMetadataPath(new File("sp-metadata.xml").getAbsolutePath());
+        cfg.setServiceProviderEntityId("http://localhost:8080/callback?client_name=SAML2Client");
+        cfg.setServiceProviderMetadataPath(new File("target", "sp-metadata.xml").getAbsolutePath());
+//        final SAML2Client saml2Client = new SAML2Client(cfg);
+
+
+//        final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration("samlConfig/samlKeystore.jks",
+//                "pac4j-demo-passwd", "pac4j-demo-passwd", "samlConfig/openidp-feide.xml");
+//        cfg.setMaximumAuthenticationLifetime(3600);
+//        cfg.setServiceProviderEntityId("urn:mace:saml:vertx-demo.pac4j.org");
+//        cfg.setServiceProviderMetadataPath(new File("sp-metadata.xml").getAbsolutePath());
         return new SAML2Client(cfg);
     }
 
