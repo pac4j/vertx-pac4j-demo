@@ -132,6 +132,9 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Saml-authenticated endpoint
         addProtectedEndpointWithoutAuthorizer("/saml/index.html", "SAML2Client", router);
 
+        // Strava-authenticated endpoint
+        addProtectedEndpointWithoutAuthorizer("/strava/index.html", "StravaClient", router);
+
         // Requires authentication endpoint without specific authenticator attached
         addProtectedEndpointWithoutAuthorizer("/protected/index.html", "", router);
 

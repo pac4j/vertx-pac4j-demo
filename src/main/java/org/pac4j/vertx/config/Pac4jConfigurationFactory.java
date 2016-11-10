@@ -32,6 +32,7 @@ import org.pac4j.http.client.indirect.IndirectBasicAuthClient;
 import org.pac4j.http.credentials.authenticator.test.SimpleTestUsernamePasswordAuthenticator;
 import org.pac4j.jwt.credentials.authenticator.JwtAuthenticator;
 import org.pac4j.oauth.client.FacebookClient;
+import org.pac4j.oauth.client.StravaClient;
 import org.pac4j.oauth.client.TwitterClient;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.saml.client.SAML2Client;
@@ -83,6 +84,7 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
                 formClient(baseUrl),
                 directBasicAuthClient(),
                 oidcClient(),
+                stravaClient(),
                 parameterClient,
                 directBasicAuthClient);
         final Config config = new Config(clients);
@@ -127,6 +129,17 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
 
     public static IndirectBasicAuthClient directBasicAuthClient() {
         return new IndirectBasicAuthClient(new SimpleTestUsernamePasswordAuthenticator());
+    }
+
+    public static StravaClient stravaClient() {
+        final StravaClient stravaClient = new StravaClient();
+        stravaClient.setApprovalPrompt("auto");
+        // client_id
+        stravaClient.setKey("3945");
+        // client_secret
+        stravaClient.setSecret("f03df80582396cddfbe0b895a726bac27c8cf739");
+        stravaClient.setScope("view_private");
+        return stravaClient;
     }
 
     public static OidcClient oidcClient() {
