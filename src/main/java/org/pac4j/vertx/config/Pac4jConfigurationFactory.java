@@ -160,6 +160,7 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
         oidcClient.setSecret("18B4WAQgzs2RhUY8V_Pl0qSh");
         oidcClient.setDiscoveryURI("https://accounts.google.com/.well-known/openid-configuration");
         oidcClient.addCustomParam("prompt", "consent");
+        oidcClient.setAuthorizationGenerator(profile -> profile.addRole("ROLE_ADMIN"));
         return oidcClient;
     }
 
