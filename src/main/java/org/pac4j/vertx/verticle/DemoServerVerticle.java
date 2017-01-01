@@ -86,6 +86,7 @@ public class DemoServerVerticle extends AbstractVerticle {
                     break;
 
                 case 500:
+                    LOG.error("Unexpected error in request handling", rc.failure());
                     rc.response().sendFile("static/error500.html");
                     break;
 
@@ -113,7 +114,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         addProtectedEndpointWithoutAuthorizer("/form/index.html", "FormClient", router);
 
         // Form-protected AJAX endpoint
-        SecurityHandlerOptions options = new SecurityHandlerOptions().withClients("FormClient");
+        SecurityHandlerOptions options = new SecurityHandlerOptions().setClients("FormClient");
         final String ajaxProtectedUrl = "/form/index.html.json";
         router.get(ajaxProtectedUrl).handler(DemoHandlers.authHandler(vertx, config, authProvider,
                 options));
@@ -140,7 +141,7 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         // Direct basic auth authentication (web services)
         addProtectedEndpointWithoutAuthorizer("/dba/index.html", "DirectBasicAuthClient,ParameterClient", router);
-        SecurityHandlerOptions dbaEndpointOptions = new SecurityHandlerOptions().withClients("DirectBasicAuthClient,ParameterClient");
+        SecurityHandlerOptions dbaEndpointOptions = new SecurityHandlerOptions().setClients("DirectBasicAuthClient,ParameterClient");
         router.post("/dba/index.html").handler(DemoHandlers.authHandler(vertx, config, authProvider,
                 dbaEndpointOptions));
         router.post("/dba/index.html").handler(protectedIndexRenderer);
@@ -185,9 +186,9 @@ public class DemoServerVerticle extends AbstractVerticle {
     }
 
     private void addProtectedEndpoint(final String url, final String clientNames, final String authName, final Router router) {
-        SecurityHandlerOptions options = new SecurityHandlerOptions().withClients(clientNames);
+        SecurityHandlerOptions options = new SecurityHandlerOptions().setClients(clientNames);
         if (authName != null) {
-            options = options.withAuthorizers(authName);
+            options = options.setAuthorizers(authName);
         }
         router.get(url).handler(DemoHandlers.authHandler(vertx, config, authProvider,
                 options));
