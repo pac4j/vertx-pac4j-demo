@@ -21,6 +21,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.sstore.SessionStore;
 import org.pac4j.cas.client.CasClient;
+import org.pac4j.cas.client.CasProxyReceptor;
+import org.pac4j.cas.config.CasConfiguration;
 import org.pac4j.core.authorization.authorizer.RequireAnyRoleAuthorizer;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
@@ -30,19 +32,18 @@ import org.pac4j.http.client.direct.ParameterClient;
 import org.pac4j.http.client.indirect.FormClient;
 import org.pac4j.http.client.indirect.IndirectBasicAuthClient;
 import org.pac4j.http.credentials.authenticator.test.SimpleTestUsernamePasswordAuthenticator;
+import org.pac4j.jwt.config.signature.SecretSignatureConfiguration;
 import org.pac4j.jwt.credentials.authenticator.JwtAuthenticator;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.StravaClient;
 import org.pac4j.oauth.client.TwitterClient;
 import org.pac4j.oidc.client.OidcClient;
+import org.pac4j.oidc.config.OidcConfiguration;
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.client.SAML2ClientConfiguration;
 import org.pac4j.vertx.authorizer.CustomAuthorizer;
-import org.pac4j.vertx.cas.VertxLocalSharedDataLogoutHandler;
 
 import java.io.File;
-
-import static org.pac4j.cas.config.CasProtocol.CAS20;
 
 /**
  * @author Jeremy Prime
@@ -64,11 +65,14 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
         this.sessionStore = sessionStore;
     }
 
-    public Config build() {
+    @Override
+    public Config build(Object... parameters) {
         final String baseUrl = jsonConf.getString("baseUrl");
 
         // REST authent with JWT for a token passed in the url as the token parameter
-        ParameterClient parameterClient = new ParameterClient("token", new JwtAuthenticator(jsonConf.getString("jwtSalt")));
+        final String jwtSalt = jsonConf.getString("jwtSalt");
+        final ParameterClient parameterClient = new ParameterClient("token",
+                new JwtAuthenticator(new SecretSignatureConfiguration(jwtSalt)));
         parameterClient.setSupportGetRequest(true);
         parameterClient.setSupportPostRequest(false);
 
@@ -107,10 +111,10 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
 
     public static CasClient casClient(final JsonObject jsonConf, final Vertx vertx, final SessionStore sessionStore) {
         final String casUrl = jsonConf.getString("casUrl");
-        final CasClient casClient = new CasClient();
-        casClient.setLogoutHandler(new VertxLocalSharedDataLogoutHandler(vertx, sessionStore));
-        casClient.setCasProtocol(CAS20);
-        casClient.setCasLoginUrl(casUrl);
+        final CasConfiguration casConfiguration = new CasConfiguration(casUrl);
+        final CasProxyReceptor casProxyReceptor = new CasProxyReceptor();
+        casConfiguration.setProxyReceptor(casProxyReceptor);
+        final CasClient casClient = new CasClient(casConfiguration);
         return casClient;
     }
 
@@ -155,12 +159,20 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
 
     public static OidcClient oidcClient() {
         // OpenID Connect
-        final OidcClient oidcClient = new OidcClient();
-        oidcClient.setClientID("736887899191-s2lsd8pakdjugkbp6v3lou7jd631rka2.apps.googleusercontent.com");
-        oidcClient.setSecret("18B4WAQgzs2RhUY8V_Pl0qSh");
-        oidcClient.setDiscoveryURI("https://accounts.google.com/.well-known/openid-configuration");
-        oidcClient.addCustomParam("prompt", "consent");
-        oidcClient.setAuthorizationGenerator(profile -> profile.addRole("ROLE_ADMIN"));
+        final OidcConfiguration oidcConfiguration = new OidcConfiguration();
+        oidcConfiguration.setClientId("343992089165-i1es0qvej18asl33mvlbeq750i3ko32k.apps.googleusercontent.com");
+        oidcConfiguration.setSecret("unXK_RSCbCXLTic2JACTiAo9");
+        oidcConfiguration.setDiscoveryURI("https://accounts.google.com/.well-known/openid-configuration");
+        oidcConfiguration.addCustomParam("prompt", "consent");
+        final OidcClient oidcClient = new OidcClient(oidcConfiguration);
+        oidcClient.addAuthorizationGenerator((ctx, profile) -> { profile.addRole("ROLE_ADMIN"); return profile; });
+
+//        final OidcClient oidcClient = new OidcClient();
+//        oidcClient.setClientID("736887899191-s2lsd8pakdjugkbp6v3lou7jd631rka2.apps.googleusercontent.com");
+//        oidcClient.setSecret("18B4WAQgzs2RhUY8V_Pl0qSh");
+//        oidcClient.setDiscoveryURI("https://accounts.google.com/.well-known/openid-configuration");
+//        oidcClient.addCustomParam("prompt", "consent");
+//        oidcClient.setAuthorizationGenerator(profile -> profile.addRole("ROLE_ADMIN"));
         return oidcClient;
     }
 

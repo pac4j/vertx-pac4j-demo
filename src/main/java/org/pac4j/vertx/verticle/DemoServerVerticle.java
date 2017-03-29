@@ -27,11 +27,13 @@ import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.UserSessionHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
-import io.vertx.ext.web.sstore.SessionStore;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.context.HttpConstants;
+import org.pac4j.core.context.session.SessionStore;
+import org.pac4j.vertx.VertxWebContext;
 import org.pac4j.vertx.auth.Pac4jAuthProvider;
 import org.pac4j.vertx.config.Pac4jConfigurationFactory;
+import org.pac4j.vertx.context.session.VertxSessionStore;
 import org.pac4j.vertx.handler.DemoHandlers;
 import org.pac4j.vertx.handler.impl.CallbackHandler;
 import org.pac4j.vertx.handler.impl.CallbackHandlerOptions;
@@ -54,7 +56,8 @@ public class DemoServerVerticle extends AbstractVerticle {
     protected static final String SESSION_HANDLER_REGEXP = "\\/((?!dba\\/|rest-jwt\\/)).*";
 
     private static final Logger LOG = LoggerFactory.getLogger(DemoServerVerticle.class);
-    private final Handler<RoutingContext> protectedIndexRenderer = DemoHandlers.protectedIndexHandler();
+    private final SessionStore<VertxWebContext> sessionStore = new VertxSessionStore();
+    private final Handler<RoutingContext> protectedIndexRenderer = DemoHandlers.protectedIndexHandler(sessionStore);
     private final Pac4jAuthProvider authProvider = new Pac4jAuthProvider(); // We don't need to instantiate this on demand
     private Config config = null;
 
@@ -62,8 +65,8 @@ public class DemoServerVerticle extends AbstractVerticle {
     public void start() {
 
         final Router router = Router.router(vertx);
-        SessionStore sessionStore = LocalSessionStore.create(vertx);
-        SessionHandler sessionHandler = SessionHandler.create(sessionStore);
+        LocalSessionStore vertxSessionStore = LocalSessionStore.create(vertx);
+        SessionHandler sessionHandler = SessionHandler.create(vertxSessionStore);
 
         // Only use the following handlers where we want to use sessions - this is enforced by the regexp
         router.routeWithRegex(SESSION_HANDLER_REGEXP).handler(io.vertx.ext.web.handler.CookieHandler.create());
@@ -99,7 +102,7 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         // need to add a json configuration file internally and ensure it's consumed by this verticle
         LOG.info("DemoServerVerticle: config is \n" + config().encodePrettily());
-        config = new Pac4jConfigurationFactory(config(), vertx, sessionStore).build();
+        config = new Pac4jConfigurationFactory(config(), vertx, vertxSessionStore).build();
         config.setHttpActionAdapter(new DefaultHttpActionAdapter());
 
         // Facebook-authenticated endpoints
@@ -116,10 +119,10 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Form-protected AJAX endpoint
         SecurityHandlerOptions options = new SecurityHandlerOptions().setClients("FormClient");
         final String ajaxProtectedUrl = "/form/index.html.json";
-        router.get(ajaxProtectedUrl).handler(DemoHandlers.authHandler(vertx, config, authProvider,
+        router.get(ajaxProtectedUrl).handler(DemoHandlers.authHandler(vertx, sessionStore, config, authProvider,
                 options));
         router.get(ajaxProtectedUrl).handler(setContentTypeHandler("application/json"));
-        router.get(ajaxProtectedUrl).handler(DemoHandlers.formIndexJsonHandler());
+        router.get(ajaxProtectedUrl).handler(DemoHandlers.formIndexJsonHandler(sessionStore));
 
         // Indirect basic auth-protected endpoint
         addProtectedEndpointWithoutAuthorizer("/basicauth/index.html", "IndirectBasicAuthClient", router);
@@ -142,7 +145,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Direct basic auth authentication (web services)
         addProtectedEndpointWithoutAuthorizer("/dba/index.html", "DirectBasicAuthClient,ParameterClient", router);
         SecurityHandlerOptions dbaEndpointOptions = new SecurityHandlerOptions().setClients("DirectBasicAuthClient,ParameterClient");
-        router.post("/dba/index.html").handler(DemoHandlers.authHandler(vertx, config, authProvider,
+        router.post("/dba/index.html").handler(DemoHandlers.authHandler(vertx, sessionStore, config, authProvider,
                 dbaEndpointOptions));
         router.post("/dba/index.html").handler(protectedIndexRenderer);
 
@@ -151,27 +154,27 @@ public class DemoServerVerticle extends AbstractVerticle {
         addProtectedEndpointWithoutAuthorizer("/rest-jwt/index.html", "ParameterClient", router);
 
         router.get("/index.html").handler(setContentTypeHandler(TEXT_HTML));
-        router.get("/index.html").handler(DemoHandlers.indexHandler());
+        router.get("/index.html").handler(DemoHandlers.indexHandler(sessionStore));
 
         final CallbackHandlerOptions callbackHandlerOptions = new CallbackHandlerOptions()
                 .setDefaultUrl("/")
                 .setMultiProfile(true);
-        final CallbackHandler callbackHandler = new CallbackHandler(vertx, config, callbackHandlerOptions);
+        final CallbackHandler callbackHandler = new CallbackHandler(vertx, sessionStore, config, callbackHandlerOptions);
         router.get("/callback").handler(callbackHandler); // This will deploy the callback handler
         router.post("/callback").handler(BodyHandler.create().setMergeFormAttributes(true));
         router.post("/callback").handler(callbackHandler);
 
-        router.get("/forceLogin").handler(forceLogin(config));
+        router.get("/forceLogin").handler(forceLogin(config, sessionStore));
 
-        router.get("/logout").handler(DemoHandlers.logoutHandler(vertx, config));
+        router.get("/logout").handler(DemoHandlers.logoutHandler(vertx, config, sessionStore));
 
         router.get("/loginForm").handler(DemoHandlers.loginFormHandler(config));
 
         router.get("/jwt.html").handler(setContentTypeHandler(TEXT_HTML));
-        router.get("/jwt.html").handler(DemoHandlers.jwtGenerator(config()));
+        router.get("/jwt.html").handler(DemoHandlers.jwtGenerator(config(), sessionStore));
 
         router.get("/").handler(setContentTypeHandler(TEXT_HTML));
-        router.get("/").handler(DemoHandlers.indexHandler());
+        router.get("/").handler(DemoHandlers.indexHandler(sessionStore));
 
         router.get("/*").handler(setContentTypeHandler(TEXT_HTML));
         router.get("/*").handler(StaticHandler.create("static"));
@@ -190,7 +193,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         if (authName != null) {
             options = options.setAuthorizers(authName);
         }
-        router.get(url).handler(DemoHandlers.authHandler(vertx, config, authProvider,
+        router.get(url).handler(DemoHandlers.authHandler(vertx, sessionStore, config, authProvider,
                 options));
         router.get(url).handler(setContentTypeHandler(TEXT_HTML));
         router.get(url).handler(protectedIndexRenderer);
