@@ -127,14 +127,6 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
         cfg.setMaximumAuthenticationLifetime(3600);
         cfg.setServiceProviderEntityId("http://localhost:8080/callback?client_name=SAML2Client");
         cfg.setServiceProviderMetadataPath(new File("target", "sp-metadata.xml").getAbsolutePath());
-//        final SAML2Client saml2Client = new SAML2Client(cfg);
-
-
-//        final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration("samlConfig/samlKeystore.jks",
-//                "pac4j-demo-passwd", "pac4j-demo-passwd", "samlConfig/openidp-feide.xml");
-//        cfg.setMaximumAuthenticationLifetime(3600);
-//        cfg.setServiceProviderEntityId("urn:mace:saml:vertx-demo.pac4j.org");
-//        cfg.setServiceProviderMetadataPath(new File("sp-metadata.xml").getAbsolutePath());
         return new SAML2Client(cfg);
     }
 
@@ -160,19 +152,12 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
     public static OidcClient oidcClient() {
         // OpenID Connect
         final OidcConfiguration oidcConfiguration = new OidcConfiguration();
-        oidcConfiguration.setClientId("343992089165-i1es0qvej18asl33mvlbeq750i3ko32k.apps.googleusercontent.com");
-        oidcConfiguration.setSecret("unXK_RSCbCXLTic2JACTiAo9");
+        oidcConfiguration.setClientId("736887899191-s2lsd8pakdjugkbp6v3lou7jd631rka2.apps.googleusercontent.com");
+        oidcConfiguration.setSecret("18B4WAQgzs2RhUY8V_Pl0qSh");
         oidcConfiguration.setDiscoveryURI("https://accounts.google.com/.well-known/openid-configuration");
         oidcConfiguration.addCustomParam("prompt", "consent");
         final OidcClient oidcClient = new OidcClient(oidcConfiguration);
         oidcClient.addAuthorizationGenerator((ctx, profile) -> { profile.addRole("ROLE_ADMIN"); return profile; });
-
-//        final OidcClient oidcClient = new OidcClient();
-//        oidcClient.setClientID("736887899191-s2lsd8pakdjugkbp6v3lou7jd631rka2.apps.googleusercontent.com");
-//        oidcClient.setSecret("18B4WAQgzs2RhUY8V_Pl0qSh");
-//        oidcClient.setDiscoveryURI("https://accounts.google.com/.well-known/openid-configuration");
-//        oidcClient.addCustomParam("prompt", "consent");
-//        oidcClient.setAuthorizationGenerator(profile -> profile.addRole("ROLE_ADMIN"));
         return oidcClient;
     }
 
