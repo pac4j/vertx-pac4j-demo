@@ -153,6 +153,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Direct basic auth then token authentication (web services)
         addProtectedEndpointWithoutAuthorizer("/rest-jwt/index.html", "ParameterClient", router);
 
+        addAnonymousProtectionTo("/index.html", router);
         router.get("/index.html").handler(setContentTypeHandler(TEXT_HTML));
         router.get("/index.html").handler(DemoHandlers.indexHandler(sessionStore));
 
@@ -173,6 +174,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         router.get("/jwt.html").handler(setContentTypeHandler(TEXT_HTML));
         router.get("/jwt.html").handler(DemoHandlers.jwtGenerator(config(), sessionStore));
 
+        addAnonymousProtectionTo("/", router);
         router.get("/").handler(setContentTypeHandler(TEXT_HTML));
         router.get("/").handler(DemoHandlers.indexHandler(sessionStore));
 
@@ -186,6 +188,12 @@ public class DemoServerVerticle extends AbstractVerticle {
 
     private void addProtectedEndpointWithoutAuthorizer(final String url, final String clientNames, final Router router) {
         addProtectedEndpoint(url, clientNames, null, router);
+    }
+
+    private void addAnonymousProtectionTo(final String url, final Router router) {
+        SecurityHandlerOptions options = new SecurityHandlerOptions().setClients("AnonymousClient");
+        router.get(url).handler(DemoHandlers.authHandler(vertx, sessionStore, config, authProvider,
+                options));
     }
 
     private void addProtectedEndpoint(final String url, final String clientNames, final String authName, final Router router) {

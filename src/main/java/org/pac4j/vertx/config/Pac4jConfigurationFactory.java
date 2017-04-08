@@ -25,6 +25,7 @@ import org.pac4j.cas.client.CasProxyReceptor;
 import org.pac4j.cas.config.CasConfiguration;
 import org.pac4j.core.authorization.authorizer.RequireAnyRoleAuthorizer;
 import org.pac4j.core.client.Clients;
+import org.pac4j.core.client.direct.AnonymousClient;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.config.ConfigFactory;
 import org.pac4j.http.client.direct.DirectBasicAuthClient;
@@ -90,7 +91,8 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
                 oidcClient(),
                 stravaClient(),
                 parameterClient,
-                directBasicAuthClient);
+                directBasicAuthClient,
+                new AnonymousClient());
         final Config config = new Config(clients);
         config.addAuthorizer(AUTHORIZER_ADMIN, new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
         config.addAuthorizer(AUTHORIZER_CUSTOM, new CustomAuthorizer());
