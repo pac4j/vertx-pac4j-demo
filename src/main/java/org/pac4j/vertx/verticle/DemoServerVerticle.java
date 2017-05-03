@@ -56,7 +56,7 @@ public class DemoServerVerticle extends AbstractVerticle {
     protected static final String SESSION_HANDLER_REGEXP = "\\/((?!dba\\/|rest-jwt\\/)).*";
 
     private static final Logger LOG = LoggerFactory.getLogger(DemoServerVerticle.class);
-    private final SessionStore<VertxWebContext> sessionStore = new VertxSessionStore();
+    private SessionStore<VertxWebContext> sessionStore;
     private final Handler<RoutingContext> protectedIndexRenderer = DemoHandlers.protectedIndexHandler(sessionStore);
     private final Pac4jAuthProvider authProvider = new Pac4jAuthProvider(); // We don't need to instantiate this on demand
     private Config config = null;
@@ -66,6 +66,7 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         final Router router = Router.router(vertx);
         LocalSessionStore vertxSessionStore = LocalSessionStore.create(vertx);
+        sessionStore = new VertxSessionStore(vertxSessionStore);
         SessionHandler sessionHandler = SessionHandler.create(vertxSessionStore);
 
         // Only use the following handlers where we want to use sessions - this is enforced by the regexp
