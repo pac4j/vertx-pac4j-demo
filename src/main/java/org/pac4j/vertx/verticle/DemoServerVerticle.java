@@ -40,6 +40,8 @@ import org.pac4j.vertx.handler.impl.CallbackHandlerOptions;
 import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
 import org.pac4j.vertx.http.DefaultHttpActionAdapter;
 
+import java.util.Optional;
+
 import static io.vertx.core.http.HttpHeaders.TEXT_HTML;
 import static org.pac4j.vertx.handler.DemoHandlers.forceLogin;
 import static org.pac4j.vertx.handler.DemoHandlers.setContentTypeHandler;
@@ -63,6 +65,14 @@ public class DemoServerVerticle extends AbstractVerticle {
 
     @Override
     public void start() {
+
+        final String keyStoreLocation = this.config().getString("keyStoreLocation");
+        final String keyStorePassword = this.config().getString("keyStorePassword");
+
+        Optional.ofNullable(keyStoreLocation).ifPresent(s -> {
+            System.setProperty("javax.net.ssl.trustStore", keyStoreLocation);
+            System.setProperty("javax.net.ssl.trustStorePassword", keyStorePassword);
+        });
 
         final Router router = Router.router(vertx);
         LocalSessionStore vertxSessionStore = LocalSessionStore.create(vertx);

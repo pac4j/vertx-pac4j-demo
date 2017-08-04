@@ -2,6 +2,8 @@
   "baseUrl": "http://localhost:8080",
   "fbId": "161172184232419",
   "fbSecret": "282fb4ff040eead3c049e3c665117ef8",
-  "casUrl": "https://casserverpac4j.herokuapp.com/login",
-  "jwtSalt": "12345678901234567890123456789012"
+  "casUrl": "https://localhost:8443/cas/login",
+  "jwtSalt": "12345678901234567890123456789012",
+  "keyStoreLocation": "/etc/cas/thekeystore",
+  "keyStorePassword": "changeit"
 }
