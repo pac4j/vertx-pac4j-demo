@@ -43,6 +43,8 @@ import org.pac4j.oidc.config.OidcConfiguration;
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.client.SAML2ClientConfiguration;
 import org.pac4j.vertx.authorizer.CustomAuthorizer;
+import org.pac4j.vertx.cas.logout.VertxCasLogoutHandler;
+import org.pac4j.vertx.core.store.VertxLocalMapStore;
 
 import java.io.File;
 
@@ -116,6 +118,7 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
         final CasConfiguration casConfiguration = new CasConfiguration(casUrl);
         final CasProxyReceptor casProxyReceptor = new CasProxyReceptor();
         casConfiguration.setProxyReceptor(casProxyReceptor);
+        casConfiguration.setLogoutHandler(new VertxCasLogoutHandler(new VertxLocalMapStore<>(vertx), false));
         final CasClient casClient = new CasClient(casConfiguration);
         return casClient;
     }
