@@ -93,6 +93,16 @@ public class DemoHandlers {
         return new LogoutHandler(vertx, sessionStore, new LogoutHandlerOptions(), config);
     }
 
+    public static Handler<RoutingContext> centralLogoutHandler(final Vertx vertx, final Config config,
+                                                        final SessionStore<VertxWebContext> sessionStore) {
+        final LogoutHandlerOptions options = new LogoutHandlerOptions()
+                .setCentralLogout(true)
+                .setLocalLogout(false)
+                .setDefaultUrl("http://localhost:8080/?defaulturlaftercentrallogout");
+        return new LogoutHandler(vertx, sessionStore, options, config);
+    }
+
+
     public static Handler<RoutingContext> protectedIndexHandler(final SessionStore<VertxWebContext> sessionStore) {
         return generateProtectedIndex((rc, buf) -> rc.response().end(buf), sessionStore);
     }

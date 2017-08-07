@@ -170,6 +170,8 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         router.get("/logout").handler(DemoHandlers.logoutHandler(vertx, config, sessionStore));
 
+        router.get("/centralLogout").handler(DemoHandlers.centralLogoutHandler(vertx, config, sessionStore));
+
         router.get("/loginForm").handler(DemoHandlers.loginFormHandler(config));
 
         router.get("/jwt.html").handler(setContentTypeHandler(TEXT_HTML));
