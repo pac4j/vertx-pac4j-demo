@@ -22,8 +22,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.HandlebarsTemplateEngine;
 import org.pac4j.core.client.Client;
-import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
+import org.pac4j.core.context.Pac4jConstants;
 import org.pac4j.core.context.session.SessionStore;
 import org.pac4j.core.exception.HttpAction;
 import org.pac4j.core.profile.CommonProfile;
@@ -180,7 +180,7 @@ public class DemoHandlers {
     public static Handler<RoutingContext> forceLogin(final Config config, final SessionStore<VertxWebContext> sessionStore) {
         return rc -> {
             final VertxWebContext context = new VertxWebContext(rc, sessionStore);
-            final Client client = config.getClients().findClient(context.getRequestParameter(Clients.DEFAULT_CLIENT_NAME_PARAMETER));
+            final Client client = config.getClients().findClient(context.getRequestParameter(Pac4jConstants.DEFAULT_CLIENT_NAME_PARAMETER));
             try {
                 final HttpAction action = client.redirect(context);
                 config.getHttpActionAdapter().adapt(action.getCode(), context);

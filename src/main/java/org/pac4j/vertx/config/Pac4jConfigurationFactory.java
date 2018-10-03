@@ -109,15 +109,15 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
     }
 
     public static TwitterClient twitterClient() {
-        return new TwitterClient("K9dtF7hwOweVHMxIr8Qe4gshl",
-                "9tlc3TBpl5aX47BGGgMNC8glDqVYi8mJKHG6LiWYVD4Sh1F9Oj");
+        return new TwitterClient("CoxUiYwQOSFDReZYdjigBA",
+                "2kAzunH5Btc4gRSaMr7D7MkyoJ5u1VzbOOzE8rBofs");
     }
 
     public static CasClient casClient(final JsonObject jsonConf, final Vertx vertx, final SessionStore sessionStore) {
         final String casUrl = jsonConf.getString("casUrl");
         final CasConfiguration casConfiguration = new CasConfiguration(casUrl);
-        final CasProxyReceptor casProxyReceptor = new CasProxyReceptor();
-        casConfiguration.setProxyReceptor(casProxyReceptor);
+        /*final CasProxyReceptor casProxyReceptor = new CasProxyReceptor();
+        casConfiguration.setProxyReceptor(casProxyReceptor);*/
         casConfiguration.setLogoutHandler(new VertxCasLogoutHandler(new VertxLocalMapStore<>(vertx), false));
         final CasClient casClient = new CasClient(casConfiguration);
         return casClient;
