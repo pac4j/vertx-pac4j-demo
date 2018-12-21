@@ -1,18 +1,3 @@
-/*
-  Copyright 2014 - 2015 pac4j organization
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
- */
 package org.pac4j.vertx.handler;
 
 import io.vertx.core.Handler;
@@ -20,7 +5,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.templ.HandlebarsTemplateEngine;
+import io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import org.pac4j.core.client.Client;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.context.Pac4jConstants;
@@ -54,16 +39,17 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
  */
 public class DemoHandlers {
 
-    public static Handler<RoutingContext> indexHandler(final SessionStore<VertxWebContext> sessionStore) {
-        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
+    public static Handler<RoutingContext> indexHandler(final Vertx vertx, final SessionStore<VertxWebContext> sessionStore) {
+        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create(vertx);
+
         return rc -> {
-// we define a hardcoded title for our application
-            rc.put("name", "Vert.x Web");
             final List<CommonProfile> profile = getUserProfiles(rc, sessionStore);
-            rc.put("userProfiles", profile);
+
+            final JsonObject json = new JsonObject();
+            json.put("name", "Vert.x Web").put("userProfiles", profile);
 
             // and now delegate to the engine to render it.
-            engine.render(rc, "templates/index.hbs", res -> {
+            engine.render(json, "templates/index.hbs", res -> {
                 if (res.succeeded()) {
                     rc.response().end(res.result());
                 } else {
@@ -103,18 +89,21 @@ public class DemoHandlers {
     }
 
 
-    public static Handler<RoutingContext> protectedIndexHandler(final SessionStore<VertxWebContext> sessionStore) {
-        return generateProtectedIndex((rc, buf) -> rc.response().end(buf), sessionStore);
+    public static Handler<RoutingContext> protectedIndexHandler(final Vertx vertx, final SessionStore<VertxWebContext> sessionStore) {
+        return generateProtectedIndex(vertx, (rc, buf) -> rc.response().end(buf), sessionStore);
     }
 
-    public static Handler<RoutingContext> loginFormHandler(final Config config) {
-        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
+    public static Handler<RoutingContext> loginFormHandler(final Vertx vertx, final Config config) {
+        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create(vertx);
         final FormClient formClient = (FormClient) config.getClients().findClient("FormClient");
         final String url = formClient.getCallbackUrl();
 
         return rc -> {
-            rc.put("url", url);
-            engine.render(rc, "templates/loginForm.hbs", res -> {
+
+            final JsonObject json = new JsonObject();
+            json.put("url", url);
+
+            engine.render(json, "templates/loginForm.hbs", res -> {
                 if (res.succeeded()) {
                     rc.response().end(res.result());
                 } else {
@@ -124,9 +113,9 @@ public class DemoHandlers {
         };
     }
 
-    public static Handler<RoutingContext> formIndexJsonHandler(final SessionStore<VertxWebContext> sessionStore) {
+    public static Handler<RoutingContext> formIndexJsonHandler(final Vertx vertx, final SessionStore<VertxWebContext> sessionStore) {
 
-        return generateProtectedIndex((rc, buf) -> {
+        return generateProtectedIndex(vertx, (rc, buf) -> {
             final JsonObject json = new JsonObject()
                     .put("content", buf.toString());
             rc.response().end(json.encodePrettily());
@@ -134,10 +123,10 @@ public class DemoHandlers {
 
     }
 
-    public static Handler<RoutingContext> jwtGenerator(final JsonObject jsonConf,
+    public static Handler<RoutingContext> jwtGenerator(final Vertx vertx, final JsonObject jsonConf,
                                                        final SessionStore<VertxWebContext> sessionStore) {
 
-        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
+        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create(vertx);
 
         return rc -> {
             final List<CommonProfile> profiles = getUserProfiles(rc, sessionStore);
@@ -146,8 +135,11 @@ public class DemoHandlers {
             if (CommonHelper.isNotEmpty(profiles)) {
                 token = generator.generate(profiles.get(0));
             }
-            rc.put("token", token);
-            engine.render(rc, "templates/jwt.hbs", res -> {
+
+            final JsonObject json = new JsonObject();
+            json.put("token", token);
+
+            engine.render(json, "templates/jwt.hbs", res -> {
                 if (res.succeeded()) {
                     rc.response().end(res.result());
                 } else {
@@ -157,17 +149,18 @@ public class DemoHandlers {
         };
     }
 
-    public static Handler<RoutingContext> generateProtectedIndex(final BiConsumer<RoutingContext, Buffer> generatedContentConsumer,
+    public static Handler<RoutingContext> generateProtectedIndex(final Vertx vertx,
+                                                                 final BiConsumer<RoutingContext, Buffer> generatedContentConsumer,
                                                                  final SessionStore<VertxWebContext> sessionStore) {
-        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create();
+        final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create(vertx);
 
         return rc -> {
-            // and now delegate to the engine to render it.
-
             final List<CommonProfile> profile = getUserProfiles(rc, sessionStore);
-            rc.put("userProfiles", profile);
 
-            engine.render(rc, "templates/protectedIndex.hbs", res -> {
+            final JsonObject json = new JsonObject();
+            json.put("userProfiles", profile);
+
+            engine.render(json, "templates/protectedIndex.hbs", res -> {
                 if (res.succeeded()) {
                     generatedContentConsumer.accept(rc, res.result());
                 } else {

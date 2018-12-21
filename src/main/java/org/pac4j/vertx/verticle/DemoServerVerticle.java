@@ -1,19 +1,3 @@
-/*
-  Copyright 2014 - 2015 pac4j organization
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
- */
-
 package org.pac4j.vertx.verticle;
 
 import io.vertx.core.AbstractVerticle;
@@ -57,7 +41,7 @@ public class DemoServerVerticle extends AbstractVerticle {
 
     private static final Logger LOG = LoggerFactory.getLogger(DemoServerVerticle.class);
     private SessionStore<VertxWebContext> sessionStore;
-    private final Handler<RoutingContext> protectedIndexRenderer = DemoHandlers.protectedIndexHandler(sessionStore);
+    private Handler<RoutingContext> protectedIndexRenderer;
     private final Pac4jAuthProvider authProvider = new Pac4jAuthProvider(); // We don't need to instantiate this on demand
     private Config config = null;
 
@@ -68,6 +52,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         LocalSessionStore vertxSessionStore = LocalSessionStore.create(vertx);
         sessionStore = new VertxSessionStore(vertxSessionStore);
         SessionHandler sessionHandler = SessionHandler.create(vertxSessionStore);
+        protectedIndexRenderer = DemoHandlers.protectedIndexHandler(vertx, sessionStore);
 
         // Only use the following handlers where we want to use sessions - this is enforced by the regexp
         router.routeWithRegex(SESSION_HANDLER_REGEXP).handler(io.vertx.ext.web.handler.CookieHandler.create());
@@ -123,7 +108,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         router.get(ajaxProtectedUrl).handler(DemoHandlers.authHandler(vertx, sessionStore, config, authProvider,
                 options));
         router.get(ajaxProtectedUrl).handler(setContentTypeHandler("application/json"));
-        router.get(ajaxProtectedUrl).handler(DemoHandlers.formIndexJsonHandler(sessionStore));
+        router.get(ajaxProtectedUrl).handler(DemoHandlers.formIndexJsonHandler(vertx, sessionStore));
 
         // Indirect basic auth-protected endpoint
         addProtectedEndpointWithoutAuthorizer("/basicauth/index.html", "IndirectBasicAuthClient", router);
@@ -156,7 +141,7 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         addAnonymousProtectionTo("/index.html", router);
         router.get("/index.html").handler(setContentTypeHandler(TEXT_HTML));
-        router.get("/index.html").handler(DemoHandlers.indexHandler(sessionStore));
+        router.get("/index.html").handler(DemoHandlers.indexHandler(vertx, sessionStore));
 
         final CallbackHandlerOptions callbackHandlerOptions = new CallbackHandlerOptions()
                 .setDefaultUrl("/")
@@ -172,14 +157,14 @@ public class DemoServerVerticle extends AbstractVerticle {
 
         router.get("/centralLogout").handler(DemoHandlers.centralLogoutHandler(vertx, config, sessionStore));
 
-        router.get("/loginForm").handler(DemoHandlers.loginFormHandler(config));
+        router.get("/loginForm").handler(DemoHandlers.loginFormHandler(vertx, config));
 
         router.get("/jwt.html").handler(setContentTypeHandler(TEXT_HTML));
-        router.get("/jwt.html").handler(DemoHandlers.jwtGenerator(config(), sessionStore));
+        router.get("/jwt.html").handler(DemoHandlers.jwtGenerator(vertx, config(), sessionStore));
 
         addAnonymousProtectionTo("/", router);
         router.get("/").handler(setContentTypeHandler(TEXT_HTML));
-        router.get("/").handler(DemoHandlers.indexHandler(sessionStore));
+        router.get("/").handler(DemoHandlers.indexHandler(vertx, sessionStore));
 
         router.get("/*").handler(setContentTypeHandler(TEXT_HTML));
         router.get("/*").handler(StaticHandler.create("static"));
