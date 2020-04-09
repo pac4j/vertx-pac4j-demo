@@ -43,7 +43,7 @@
         <junit.version>4.11</junit.version>
         <handlebars.java.version>1.3.0</handlebars.java.version>
         <vertx-pac4j.version>4.1.0</vertx-pac4j.version>
-        <slf4j.version>1.7.21</slf4j.version>
+        <slf4j.version>1.7.30</slf4j.version>
 
         <!--Plugin versions-->
         <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
