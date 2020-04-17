@@ -10,6 +10,10 @@
         </layout>
     </appender>
 
+    <logger name="org.pac4j.core.engine">
+        <level value="debug"/>
+    </logger>
+
     <root>
         <level value="INFO" />
         <appender-ref ref="console" />

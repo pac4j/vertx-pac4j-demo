@@ -6,7 +6,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.sstore.SessionStore;
 import org.pac4j.cas.client.CasClient;
-import org.pac4j.cas.client.CasProxyReceptor;
 import org.pac4j.cas.config.CasConfiguration;
 import org.pac4j.core.authorization.authorizer.RequireAnyRoleAuthorizer;
 import org.pac4j.core.client.Clients;
@@ -26,12 +25,11 @@ import org.pac4j.oauth.client.TwitterClient;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
 import org.pac4j.saml.client.SAML2Client;
-import org.pac4j.saml.client.SAML2ClientConfiguration;
+import org.pac4j.saml.config.SAML2Configuration;
 import org.pac4j.vertx.authorizer.CustomAuthorizer;
-import org.pac4j.vertx.cas.logout.VertxCasLogoutHandler;
-import org.pac4j.vertx.core.store.VertxLocalMapStore;
 
 import java.io.File;
+import java.util.Optional;
 
 /**
  * @author Jeremy Prime
@@ -103,14 +101,13 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
         final CasConfiguration casConfiguration = new CasConfiguration(casUrl);
         /*final CasProxyReceptor casProxyReceptor = new CasProxyReceptor();
         casConfiguration.setProxyReceptor(casProxyReceptor);*/
-        casConfiguration.setLogoutHandler(new VertxCasLogoutHandler(new VertxLocalMapStore<>(vertx), false));
         final CasClient casClient = new CasClient(casConfiguration);
         return casClient;
     }
 
     public static SAML2Client saml2Client() {
 
-        final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration("samlConfig/samlKeystore.jks",
+        final SAML2Configuration cfg = new SAML2Configuration("samlConfig/samlKeystore.jks",
                 "pac4j-demo-passwd",
                 "pac4j-demo-passwd",
                 "samlConfig/metadata-okta.xml");
@@ -147,8 +144,7 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
         oidcConfiguration.setDiscoveryURI("https://accounts.google.com/.well-known/openid-configuration");
         oidcConfiguration.addCustomParam("prompt", "consent");
         final OidcClient oidcClient = new OidcClient(oidcConfiguration);
-        oidcClient.addAuthorizationGenerator((ctx, profile) -> { profile.addRole("ROLE_ADMIN"); return profile; });
+        oidcClient.addAuthorizationGenerator((ctx, profile) -> { profile.addRole("ROLE_ADMIN"); return Optional.of(profile); });
         return oidcClient;
     }
-
 }

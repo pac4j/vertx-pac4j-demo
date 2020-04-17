@@ -8,12 +8,13 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import org.pac4j.core.client.Client;
 import org.pac4j.core.config.Config;
-import org.pac4j.core.context.Pac4jConstants;
 import org.pac4j.core.context.session.SessionStore;
-import org.pac4j.core.exception.HttpAction;
+import org.pac4j.core.exception.http.HttpAction;
+import org.pac4j.core.exception.http.RedirectionAction;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.core.util.CommonHelper;
+import org.pac4j.core.util.Pac4jConstants;
 import org.pac4j.http.client.indirect.FormClient;
 import org.pac4j.jwt.config.signature.SecretSignatureConfiguration;
 import org.pac4j.jwt.profile.JwtGenerator;
@@ -24,6 +25,7 @@ import org.pac4j.vertx.handler.impl.LogoutHandler;
 import org.pac4j.vertx.handler.impl.LogoutHandlerOptions;
 import org.pac4j.vertx.handler.impl.SecurityHandler;
 import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
+import org.pac4j.vertx.http.VertxHttpActionAdapter;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -95,7 +97,7 @@ public class DemoHandlers {
 
     public static Handler<RoutingContext> loginFormHandler(final Vertx vertx, final Config config) {
         final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create(vertx);
-        final FormClient formClient = (FormClient) config.getClients().findClient("FormClient");
+        final FormClient formClient = (FormClient) config.getClients().findClient("FormClient").get();
         final String url = formClient.getCallbackUrl();
 
         return rc -> {
@@ -173,15 +175,15 @@ public class DemoHandlers {
     public static Handler<RoutingContext> forceLogin(final Config config, final SessionStore<VertxWebContext> sessionStore) {
         return rc -> {
             final VertxWebContext context = new VertxWebContext(rc, sessionStore);
-            final Client client = config.getClients().findClient(context.getRequestParameter(Pac4jConstants.DEFAULT_CLIENT_NAME_PARAMETER));
+            final Client client = config.getClients().findClient(context.getRequestParameter(Pac4jConstants.DEFAULT_CLIENT_NAME_PARAMETER).get()).get();
             try {
-                final HttpAction action = client.redirect(context);
-                config.getHttpActionAdapter().adapt(action.getCode(), context);
-            } catch (HttpAction httpAction) {
-                rc.fail(httpAction);
+                final RedirectionAction action = (RedirectionAction) client.getRedirectionAction(context).get();
+                VertxHttpActionAdapter.INSTANCE.adapt(action, context);
+            } catch (final HttpAction exceptionAction) {
+                rc.fail(exceptionAction);
+                VertxHttpActionAdapter.INSTANCE.adapt(exceptionAction, context);
             }
         };
-
     }
 
     private static List<CommonProfile> getUserProfiles(final RoutingContext rc, final SessionStore<VertxWebContext> sessionStore) {

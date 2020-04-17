@@ -1,9 +1,8 @@
 package org.pac4j.vertx.authorizer;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.pac4j.core.authorization.authorizer.ProfileAuthorizer;
 import org.pac4j.core.context.WebContext;
-import org.pac4j.core.exception.HttpAction;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.List;
 public class CustomAuthorizer extends ProfileAuthorizer<CommonProfile> {
 
     @Override
-    protected boolean isProfileAuthorized(WebContext context, CommonProfile profile) throws HttpAction {
+    protected boolean isProfileAuthorized(WebContext context, CommonProfile profile) {
         if (profile == null) {
             return false;
         }
@@ -23,7 +22,7 @@ public class CustomAuthorizer extends ProfileAuthorizer<CommonProfile> {
     }
 
     @Override
-    public boolean isAuthorized(WebContext context, List<CommonProfile> profiles) throws HttpAction {
+    public boolean isAuthorized(WebContext context, List<CommonProfile> profiles) {
         return isAnyAuthorized(context, profiles);
     }
 }

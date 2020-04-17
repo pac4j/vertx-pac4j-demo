@@ -22,7 +22,6 @@ import org.pac4j.vertx.handler.DemoHandlers;
 import org.pac4j.vertx.handler.impl.CallbackHandler;
 import org.pac4j.vertx.handler.impl.CallbackHandlerOptions;
 import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
-import org.pac4j.vertx.http.DefaultHttpActionAdapter;
 
 import static io.vertx.core.http.HttpHeaders.TEXT_HTML;
 import static org.pac4j.vertx.handler.DemoHandlers.forceLogin;
@@ -89,7 +88,6 @@ public class DemoServerVerticle extends AbstractVerticle {
         // need to add a json configuration file internally and ensure it's consumed by this verticle
         LOG.info("DemoServerVerticle: config is \n" + config().encodePrettily());
         config = new Pac4jConfigurationFactory(config(), vertx, vertxSessionStore).build();
-        config.setHttpActionAdapter(new DefaultHttpActionAdapter());
 
         // Facebook-authenticated endpoints
         addProtectedEndpointWithoutAuthorizer("/facebook/index.html", "FacebookClient", router);

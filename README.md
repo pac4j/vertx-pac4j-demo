@@ -10,6 +10,6 @@ Build the project and launch the Vertx web app on [http://localhost:8080](http:/
 
     cd vertx-pac4j-demo
     mvn clean package
-    java -jar target/vertx-pac4j-demo-4.0.0-SNAPSHOT-fat.jar
+    java -jar target/vertx-pac4j-demo-5.0.0-SNAPSHOT-fat.jar
 
 To test, you can call a protected url by clicking on the "Protected url by **xxx**" link, which will start the authentication process with the **xxx** provider.
