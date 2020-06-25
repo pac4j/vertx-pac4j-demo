@@ -27,7 +27,7 @@
         <vertx.version>3.9.1</vertx.version>
         <junit.version>4.11</junit.version>
         <handlebars.java.version>1.3.0</handlebars.java.version>
-        <vertx-pac4j.version>5.0.0-SNAPSHOT</vertx-pac4j.version>
+        <vertx-pac4j.version>5.0.0</vertx-pac4j.version>
         <slf4j.version>1.7.30</slf4j.version>
 
         <!--Plugin versions-->
