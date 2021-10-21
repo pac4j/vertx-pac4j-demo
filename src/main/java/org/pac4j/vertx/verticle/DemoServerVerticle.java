@@ -2,19 +2,15 @@ package org.pac4j.vertx.verticle;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.ext.web.handler.UserSessionHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.context.HttpConstants;
 import org.pac4j.core.context.session.SessionStore;
-import org.pac4j.vertx.VertxWebContext;
 import org.pac4j.vertx.auth.Pac4jAuthProvider;
 import org.pac4j.vertx.config.Pac4jConfigurationFactory;
 import org.pac4j.vertx.context.session.VertxSessionStore;
@@ -22,6 +18,8 @@ import org.pac4j.vertx.handler.DemoHandlers;
 import org.pac4j.vertx.handler.impl.CallbackHandler;
 import org.pac4j.vertx.handler.impl.CallbackHandlerOptions;
 import org.pac4j.vertx.handler.impl.SecurityHandlerOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.vertx.core.http.HttpHeaders.TEXT_HTML;
 import static org.pac4j.vertx.handler.DemoHandlers.forceLogin;
@@ -39,7 +37,8 @@ public class DemoServerVerticle extends AbstractVerticle {
     protected static final String SESSION_HANDLER_REGEXP = "\\/((?!dba\\/|rest-jwt\\/)).*";
 
     private static final Logger LOG = LoggerFactory.getLogger(DemoServerVerticle.class);
-    private SessionStore<VertxWebContext> sessionStore;
+
+    private SessionStore sessionStore;
     private Handler<RoutingContext> protectedIndexRenderer;
     private final Pac4jAuthProvider authProvider = new Pac4jAuthProvider(); // We don't need to instantiate this on demand
     private Config config = null;
@@ -53,10 +52,8 @@ public class DemoServerVerticle extends AbstractVerticle {
         SessionHandler sessionHandler = SessionHandler.create(vertxSessionStore);
         protectedIndexRenderer = DemoHandlers.protectedIndexHandler(vertx, sessionStore);
 
-        // Only use the following handlers where we want to use sessions - this is enforced by the regexp
-        router.routeWithRegex(SESSION_HANDLER_REGEXP).handler(io.vertx.ext.web.handler.CookieHandler.create());
+        // Only use the following handler where we want to use sessions - this is enforced by the regexp
         router.routeWithRegex(SESSION_HANDLER_REGEXP).handler(sessionHandler);
-        router.routeWithRegex(SESSION_HANDLER_REGEXP).handler(UserSessionHandler.create(authProvider));
 
         router.route().failureHandler(rc -> {
             final int statusCode = rc.statusCode();
@@ -168,7 +165,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         router.get("/*").handler(StaticHandler.create("static"));
 
         vertx.createHttpServer()
-                .requestHandler(router::accept)
+                .requestHandler(router)
                 .listen(8080);
     }
 

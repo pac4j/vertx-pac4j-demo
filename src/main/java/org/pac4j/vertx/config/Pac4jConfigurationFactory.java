@@ -2,8 +2,6 @@ package org.pac4j.vertx.config;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.sstore.SessionStore;
 import org.pac4j.cas.client.CasClient;
 import org.pac4j.cas.config.CasConfiguration;
@@ -27,6 +25,8 @@ import org.pac4j.oidc.config.OidcConfiguration;
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.config.SAML2Configuration;
 import org.pac4j.vertx.authorizer.CustomAuthorizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Optional;
@@ -38,6 +38,7 @@ import java.util.Optional;
 public class Pac4jConfigurationFactory implements ConfigFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(Pac4jConfigurationFactory.class);
+
     public static final String AUTHORIZER_ADMIN = "admin";
     public static final String AUTHORIZER_CUSTOM = "custom";
 
@@ -144,7 +145,7 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
         oidcConfiguration.setDiscoveryURI("https://accounts.google.com/.well-known/openid-configuration");
         oidcConfiguration.addCustomParam("prompt", "consent");
         final OidcClient oidcClient = new OidcClient(oidcConfiguration);
-        oidcClient.addAuthorizationGenerator((ctx, profile) -> { profile.addRole("ROLE_ADMIN"); return Optional.of(profile); });
+        oidcClient.addAuthorizationGenerator((ctx, store, profile) -> { profile.addRole("ROLE_ADMIN"); return Optional.of(profile); });
         return oidcClient;
     }
 }

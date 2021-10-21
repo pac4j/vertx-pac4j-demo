@@ -2,12 +2,12 @@ package org.pac4j.vertx.verticle;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.Vertx;
-import rx.Observable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rx.Single;
 
 import java.io.*;
 
@@ -23,11 +23,11 @@ public class MainVerticle extends AbstractVerticle {
     private static final Logger LOG = LoggerFactory.getLogger(MainVerticle.class);
 
     @Override
-    public void start(Future<Void> startFuture) throws Exception {
+    public void start(Promise<Void> startPromise) throws Exception {
         super.start();
 
         Vertx rxVertx = new Vertx(vertx);
-        final Observable<String> deploymentIdObservable = rxVertx.<String>executeBlockingObservable(future -> {
+        final Single<String> deploymentIdObservable = rxVertx.<String>rxExecuteBlocking(future -> {
             final InputStream inputStream = getClass().getClassLoader().getResourceAsStream("config_demo.json");
             final InputStreamReader inputStreamReader;
             final char[] buffer = new char[1000]; // we know the config file will be small so we should be ok
@@ -51,11 +51,11 @@ public class MainVerticle extends AbstractVerticle {
         })
         .map(s -> new JsonObject(s))
         .map(conf -> new DeploymentOptions().setConfig(conf))
-        .flatMap(options -> rxVertx.deployVerticleObservable(DemoServerVerticle.class.getName(), options));
+        .flatMap(options -> rxVertx.rxDeployVerticle(DemoServerVerticle.class.getName(), options));
 
         deploymentIdObservable.subscribe(string -> {
             LOG.info("Demo server verticle deployed with deployment id '" + string + "'");
-            startFuture.complete();
+            startPromise.complete();
         });
     }
 }

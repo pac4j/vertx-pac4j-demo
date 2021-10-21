@@ -11,8 +11,8 @@ import org.pac4j.core.config.Config;
 import org.pac4j.core.context.session.SessionStore;
 import org.pac4j.core.exception.http.HttpAction;
 import org.pac4j.core.exception.http.RedirectionAction;
-import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
+import org.pac4j.core.profile.UserProfile;
 import org.pac4j.core.util.CommonHelper;
 import org.pac4j.core.util.Pac4jConstants;
 import org.pac4j.http.client.indirect.FormClient;
@@ -21,6 +21,7 @@ import org.pac4j.jwt.profile.JwtGenerator;
 import org.pac4j.vertx.VertxProfileManager;
 import org.pac4j.vertx.VertxWebContext;
 import org.pac4j.vertx.auth.Pac4jAuthProvider;
+import org.pac4j.vertx.context.session.VertxSessionStore;
 import org.pac4j.vertx.handler.impl.LogoutHandler;
 import org.pac4j.vertx.handler.impl.LogoutHandlerOptions;
 import org.pac4j.vertx.handler.impl.SecurityHandler;
@@ -41,11 +42,11 @@ import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
  */
 public class DemoHandlers {
 
-    public static Handler<RoutingContext> indexHandler(final Vertx vertx, final SessionStore<VertxWebContext> sessionStore) {
+    public static Handler<RoutingContext> indexHandler(final Vertx vertx, final SessionStore sessionStore) {
         final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create(vertx);
 
         return rc -> {
-            final List<CommonProfile> profile = getUserProfiles(rc, sessionStore);
+            final List<UserProfile> profile = getUserProfiles(rc, sessionStore);
 
             final JsonObject json = new JsonObject();
             json.put("name", "Vert.x Web").put("userProfiles", profile);
@@ -69,7 +70,7 @@ public class DemoHandlers {
     }
 
     public static Handler<RoutingContext> authHandler(final Vertx vertx,
-                                                      final SessionStore<VertxWebContext> sessionStore,
+                                                      final SessionStore sessionStore,
                                                       final Config config,
                                                       final Pac4jAuthProvider provider,
                                                       final SecurityHandlerOptions options) {
@@ -77,12 +78,12 @@ public class DemoHandlers {
     }
 
     public static Handler<RoutingContext> logoutHandler(final Vertx vertx, final Config config,
-                                                        final SessionStore<VertxWebContext> sessionStore) {
+                                                        final SessionStore sessionStore) {
         return new LogoutHandler(vertx, sessionStore, new LogoutHandlerOptions(), config);
     }
 
     public static Handler<RoutingContext> centralLogoutHandler(final Vertx vertx, final Config config,
-                                                        final SessionStore<VertxWebContext> sessionStore) {
+                                                        final SessionStore sessionStore) {
         final LogoutHandlerOptions options = new LogoutHandlerOptions()
                 .setCentralLogout(true)
                 .setLocalLogout(false)
@@ -91,7 +92,7 @@ public class DemoHandlers {
     }
 
 
-    public static Handler<RoutingContext> protectedIndexHandler(final Vertx vertx, final SessionStore<VertxWebContext> sessionStore) {
+    public static Handler<RoutingContext> protectedIndexHandler(final Vertx vertx, final SessionStore sessionStore) {
         return generateProtectedIndex(vertx, (rc, buf) -> rc.response().end(buf), sessionStore);
     }
 
@@ -115,7 +116,7 @@ public class DemoHandlers {
         };
     }
 
-    public static Handler<RoutingContext> formIndexJsonHandler(final Vertx vertx, final SessionStore<VertxWebContext> sessionStore) {
+    public static Handler<RoutingContext> formIndexJsonHandler(final Vertx vertx, final SessionStore sessionStore) {
 
         return generateProtectedIndex(vertx, (rc, buf) -> {
             final JsonObject json = new JsonObject()
@@ -126,12 +127,12 @@ public class DemoHandlers {
     }
 
     public static Handler<RoutingContext> jwtGenerator(final Vertx vertx, final JsonObject jsonConf,
-                                                       final SessionStore<VertxWebContext> sessionStore) {
+                                                       final SessionStore sessionStore) {
 
         final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create(vertx);
 
         return rc -> {
-            final List<CommonProfile> profiles = getUserProfiles(rc, sessionStore);
+            final List<UserProfile> profiles = getUserProfiles(rc, sessionStore);
             final JwtGenerator generator = new JwtGenerator(new SecretSignatureConfiguration(jsonConf.getString("jwtSalt")));
             String token = "";
             if (CommonHelper.isNotEmpty(profiles)) {
@@ -153,11 +154,11 @@ public class DemoHandlers {
 
     public static Handler<RoutingContext> generateProtectedIndex(final Vertx vertx,
                                                                  final BiConsumer<RoutingContext, Buffer> generatedContentConsumer,
-                                                                 final SessionStore<VertxWebContext> sessionStore) {
+                                                                 final SessionStore sessionStore) {
         final HandlebarsTemplateEngine engine = HandlebarsTemplateEngine.create(vertx);
 
         return rc -> {
-            final List<CommonProfile> profile = getUserProfiles(rc, sessionStore);
+            final List<UserProfile> profile = getUserProfiles(rc, sessionStore);
 
             final JsonObject json = new JsonObject();
             json.put("userProfiles", profile);
@@ -172,12 +173,12 @@ public class DemoHandlers {
         };
     }
 
-    public static Handler<RoutingContext> forceLogin(final Config config, final SessionStore<VertxWebContext> sessionStore) {
+    public static Handler<RoutingContext> forceLogin(final Config config, final SessionStore sessionStore) {
         return rc -> {
             final VertxWebContext context = new VertxWebContext(rc, sessionStore);
             final Client client = config.getClients().findClient(context.getRequestParameter(Pac4jConstants.DEFAULT_CLIENT_NAME_PARAMETER).get()).get();
             try {
-                final RedirectionAction action = (RedirectionAction) client.getRedirectionAction(context).get();
+                final RedirectionAction action = client.getRedirectionAction(context, sessionStore).get();
                 VertxHttpActionAdapter.INSTANCE.adapt(action, context);
             } catch (final HttpAction exceptionAction) {
                 rc.fail(exceptionAction);
@@ -186,8 +187,8 @@ public class DemoHandlers {
         };
     }
 
-    private static List<CommonProfile> getUserProfiles(final RoutingContext rc, final SessionStore<VertxWebContext> sessionStore) {
-        final ProfileManager<CommonProfile> profileManager = new VertxProfileManager(new VertxWebContext(rc, sessionStore));
-        return profileManager.getAll(true);
+    private static List<UserProfile> getUserProfiles(final RoutingContext rc, final SessionStore sessionStore) {
+        final ProfileManager profileManager = new VertxProfileManager(new VertxWebContext(rc, sessionStore), (VertxSessionStore) sessionStore);
+        return profileManager.getProfiles();
     }
 }
