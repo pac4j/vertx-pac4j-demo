@@ -1,7 +1,0 @@
-{
-  "baseUrl": "http://localhost:8080",
-  "fbId": "145278422258960",
-  "fbSecret": "be21409ba8f39b5dae2a7de525484da8",
-  "casUrl": "https://casserverpac4j.herokuapp.com/login",
-  "jwtSalt": "12345678901234567890123456789012"
-}
