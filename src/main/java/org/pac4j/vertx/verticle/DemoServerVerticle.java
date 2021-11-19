@@ -2,6 +2,7 @@ package org.pac4j.vertx.verticle;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -98,10 +99,10 @@ public class DemoServerVerticle extends AbstractVerticle {
         addProtectedEndpointWithoutAuthorizer("/form/index.html", "FormClient", router);
 
         // Form-protected AJAX endpoint
-        SecurityHandlerOptions options = new SecurityHandlerOptions().setClients("FormClient");
+        SecurityHandlerOptions securityHandlerOptions = new SecurityHandlerOptions().setClients("FormClient");
         final String ajaxProtectedUrl = "/form/index.html.json";
         router.get(ajaxProtectedUrl).handler(DemoHandlers.authHandler(vertx, sessionStore, config, authProvider,
-                options));
+                securityHandlerOptions));
         router.get(ajaxProtectedUrl).handler(setContentTypeHandler("application/json"));
         router.get(ajaxProtectedUrl).handler(DemoHandlers.formIndexJsonHandler(vertx, sessionStore));
 
@@ -164,7 +165,9 @@ public class DemoServerVerticle extends AbstractVerticle {
         router.get("/*").handler(setContentTypeHandler(TEXT_HTML));
         router.get("/*").handler(StaticHandler.create("static"));
 
-        vertx.createHttpServer()
+        HttpServerOptions options = new HttpServerOptions();
+        options.setMaxFormAttributeSize(65536);
+        vertx.createHttpServer(options)
                 .requestHandler(router)
                 .listen(8080);
     }
