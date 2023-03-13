@@ -54,6 +54,11 @@
         <!-- Pac4j -->
         <dependency>
             <groupId>org.pac4j</groupId>
+            <artifactId>pac4j-core</artifactId>
+            <version>${pac4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.pac4j</groupId>
             <artifactId>vertx-pac4j</artifactId>
             <version>${vertx-pac4j.version}</version>
         </dependency>
