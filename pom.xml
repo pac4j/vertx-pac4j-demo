@@ -24,7 +24,7 @@
         <demo.server.verticle>org.pac4j.vertx.verticle.MainVerticle</demo.server.verticle>
         <!--Dependency versions-->
         <pac4j.version>5.7.2</pac4j.version>
-        <vertx.version>4.5.0</vertx.version>
+        <vertx.version>4.5.3</vertx.version>
         <java.version>11</java.version>
         <junit.version>4.11</junit.version>
         <handlebars.java.version>1.3.0</handlebars.java.version>
