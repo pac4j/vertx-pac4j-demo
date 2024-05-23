@@ -23,7 +23,7 @@
         <main.class>io.vertx.core.Launcher</main.class>
         <demo.server.verticle>org.pac4j.vertx.verticle.MainVerticle</demo.server.verticle>
         <!--Dependency versions-->
-        <pac4j.version>5.7.4</pac4j.version>
+        <pac4j.version>5.7.5</pac4j.version>
         <vertx.version>4.5.7</vertx.version>
         <java.version>11</java.version>
         <junit.version>4.11</junit.version>
