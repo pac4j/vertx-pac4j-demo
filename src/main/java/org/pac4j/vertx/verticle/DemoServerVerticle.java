@@ -12,7 +12,6 @@ import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.context.HttpConstants;
 import org.pac4j.core.context.session.SessionStore;
-import org.pac4j.vertx.auth.Pac4jAuthProvider;
 import org.pac4j.vertx.config.Pac4jConfigurationFactory;
 import org.pac4j.vertx.context.session.VertxSessionStore;
 import org.pac4j.vertx.handler.DemoHandlers;
@@ -39,9 +38,8 @@ public class DemoServerVerticle extends AbstractVerticle {
 
     private static final Logger LOG = LoggerFactory.getLogger(DemoServerVerticle.class);
 
-    private SessionStore sessionStore;
+    private VertxSessionStore sessionStore;
     private Handler<RoutingContext> protectedIndexRenderer;
-    private final Pac4jAuthProvider authProvider = new Pac4jAuthProvider(); // We don't need to instantiate this on demand
     private Config config = null;
 
     @Override
@@ -101,7 +99,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Form-protected AJAX endpoint
         SecurityHandlerOptions securityHandlerOptions = new SecurityHandlerOptions().setClients("FormClient");
         final String ajaxProtectedUrl = "/form/index.html.json";
-        router.get(ajaxProtectedUrl).handler(DemoHandlers.authHandler(vertx, sessionStore, config, authProvider,
+        router.get(ajaxProtectedUrl).handler(DemoHandlers.authHandler(vertx, sessionStore, config,
                 securityHandlerOptions));
         router.get(ajaxProtectedUrl).handler(setContentTypeHandler("application/json"));
         router.get(ajaxProtectedUrl).handler(DemoHandlers.formIndexJsonHandler(vertx, sessionStore));
@@ -127,7 +125,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         // Direct basic auth authentication (web services)
         addProtectedEndpointWithoutAuthorizer("/dba/index.html", "DirectBasicAuthClient,ParameterClient", router);
         SecurityHandlerOptions dbaEndpointOptions = new SecurityHandlerOptions().setClients("DirectBasicAuthClient,ParameterClient");
-        router.post("/dba/index.html").handler(DemoHandlers.authHandler(vertx, sessionStore, config, authProvider,
+        router.post("/dba/index.html").handler(DemoHandlers.authHandler(vertx, sessionStore, config,
                 dbaEndpointOptions));
         router.post("/dba/index.html").handler(protectedIndexRenderer);
 
@@ -178,8 +176,7 @@ public class DemoServerVerticle extends AbstractVerticle {
 
     private void addAnonymousProtectionTo(final String url, final Router router) {
         SecurityHandlerOptions options = new SecurityHandlerOptions().setClients("AnonymousClient");
-        router.get(url).handler(DemoHandlers.authHandler(vertx, sessionStore, config, authProvider,
-                options));
+        router.get(url).handler(DemoHandlers.authHandler(vertx, sessionStore, config, options));
     }
 
     private void addProtectedEndpoint(final String url, final String clientNames, final String authName, final Router router) {
@@ -187,8 +184,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         if (authName != null) {
             options = options.setAuthorizers(authName);
         }
-        router.get(url).handler(DemoHandlers.authHandler(vertx, sessionStore, config, authProvider,
-                options));
+        router.get(url).handler(DemoHandlers.authHandler(vertx, sessionStore, config, options));
         router.get(url).handler(setContentTypeHandler(TEXT_HTML));
         router.get(url).handler(protectedIndexRenderer);
     }

@@ -145,7 +145,7 @@ public class Pac4jConfigurationFactory implements ConfigFactory {
         oidcConfiguration.setDiscoveryURI("https://accounts.google.com/.well-known/openid-configuration");
         oidcConfiguration.addCustomParam("prompt", "consent");
         final OidcClient oidcClient = new OidcClient(oidcConfiguration);
-        oidcClient.addAuthorizationGenerator((ctx, store, profile) -> { profile.addRole("ROLE_ADMIN"); return Optional.of(profile); });
+        oidcClient.addAuthorizationGenerator((ctx, profile) -> { profile.addRole("ROLE_ADMIN"); return Optional.of(profile); });
         return oidcClient;
     }
 }

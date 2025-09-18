@@ -4,10 +4,8 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import io.vertx.rxjava.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rx.Single;
 
 import java.io.*;
 
@@ -25,9 +23,7 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         super.start();
-
-        Vertx rxVertx = new Vertx(vertx);
-        final Single<String> deploymentIdObservable = rxVertx.<String>rxExecuteBlocking(future -> {
+        vertx.executeBlocking(() -> {
             final InputStream inputStream = getClass().getClassLoader().getResourceAsStream("config_demo.json");
             final InputStreamReader inputStreamReader;
             final char[] buffer = new char[1000]; // we know the config file will be small so we should be ok
@@ -46,16 +42,15 @@ public class MainVerticle extends AbstractVerticle {
             } catch (IOException e) {
                 throw new RuntimeException("Failed to read config file", e);
             }
-            future.complete(builder.toString());
-
+            return builder.toString();
         })
         .map(s -> new JsonObject(s))
         .map(conf -> new DeploymentOptions().setConfig(conf))
-        .flatMap(options -> rxVertx.rxDeployVerticle(DemoServerVerticle.class.getName(), options));
-
-        deploymentIdObservable.subscribe(string -> {
-            LOG.info("Demo server verticle deployed with deployment id '" + string + "'");
+        .flatMap(options -> vertx.deployVerticle(DemoServerVerticle.class.getName(), options))
+        .onComplete(s -> {
+            LOG.info("Demo server verticle deployed with deployment id '" + s + "'");
             startPromise.complete();
         });
+
     }
 }
