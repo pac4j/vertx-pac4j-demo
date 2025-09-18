@@ -8,6 +8,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import org.pac4j.core.client.Client;
 import org.pac4j.core.config.Config;
+import org.pac4j.core.context.CallContext;
 import org.pac4j.core.context.session.SessionStore;
 import org.pac4j.core.exception.http.HttpAction;
 import org.pac4j.core.exception.http.RedirectionAction;
@@ -20,7 +21,6 @@ import org.pac4j.jwt.config.signature.SecretSignatureConfiguration;
 import org.pac4j.jwt.profile.JwtGenerator;
 import org.pac4j.vertx.VertxProfileManager;
 import org.pac4j.vertx.VertxWebContext;
-import org.pac4j.vertx.auth.Pac4jAuthProvider;
 import org.pac4j.vertx.context.session.VertxSessionStore;
 import org.pac4j.vertx.handler.impl.LogoutHandler;
 import org.pac4j.vertx.handler.impl.LogoutHandlerOptions;
@@ -52,7 +52,7 @@ public class DemoHandlers {
             json.put("name", "Vert.x Web").put("userProfiles", profile);
 
             // and now delegate to the engine to render it.
-            engine.render(json, "templates/index.hbs", res -> {
+            engine.render(json, "templates/index.hbs").onComplete(res -> {
                 if (res.succeeded()) {
                     rc.response().end(res.result());
                 } else {
@@ -70,11 +70,10 @@ public class DemoHandlers {
     }
 
     public static Handler<RoutingContext> authHandler(final Vertx vertx,
-                                                      final SessionStore sessionStore,
+                                                      final VertxSessionStore sessionStore,
                                                       final Config config,
-                                                      final Pac4jAuthProvider provider,
                                                       final SecurityHandlerOptions options) {
-        return new SecurityHandler(vertx, sessionStore, config, provider, options);
+        return new SecurityHandler(vertx, sessionStore, config, options);
     }
 
     public static Handler<RoutingContext> logoutHandler(final Vertx vertx, final Config config,
@@ -106,7 +105,7 @@ public class DemoHandlers {
             final JsonObject json = new JsonObject();
             json.put("url", url);
 
-            engine.render(json, "templates/loginForm.hbs", res -> {
+            engine.render(json, "templates/loginForm.hbs").onComplete(res -> {
                 if (res.succeeded()) {
                     rc.response().end(res.result());
                 } else {
@@ -142,7 +141,7 @@ public class DemoHandlers {
             final JsonObject json = new JsonObject();
             json.put("token", token);
 
-            engine.render(json, "templates/jwt.hbs", res -> {
+            engine.render(json, "templates/jwt.hbs").onComplete(res -> {
                 if (res.succeeded()) {
                     rc.response().end(res.result());
                 } else {
@@ -163,7 +162,7 @@ public class DemoHandlers {
             final JsonObject json = new JsonObject();
             json.put("userProfiles", profile);
 
-            engine.render(json, "templates/protectedIndex.hbs", res -> {
+            engine.render(json, "templates/protectedIndex.hbs").onComplete(res -> {
                 if (res.succeeded()) {
                     generatedContentConsumer.accept(rc, res.result());
                 } else {
@@ -178,7 +177,7 @@ public class DemoHandlers {
             final VertxWebContext context = new VertxWebContext(rc, sessionStore);
             final Client client = config.getClients().findClient(context.getRequestParameter(Pac4jConstants.DEFAULT_CLIENT_NAME_PARAMETER).get()).get();
             try {
-                final RedirectionAction action = client.getRedirectionAction(context, sessionStore).get();
+                final RedirectionAction action = client.getRedirectionAction(new CallContext(context, sessionStore)).get();
                 VertxHttpActionAdapter.INSTANCE.adapt(action, context);
             } catch (final HttpAction exceptionAction) {
                 rc.fail(exceptionAction);
