@@ -23,7 +23,7 @@
         <main.class>org.pac4j.vertx.Main</main.class>
         <demo.server.verticle>org.pac4j.vertx.verticle.MainVerticle</demo.server.verticle>
         <!--Dependency versions-->
-        <pac4j.version>6.2.1</pac4j.version>
+        <pac4j.version>6.2.2</pac4j.version>
         <vertx.version>5.0.4</vertx.version>
         <java.version>17</java.version>
         <junit.version>4.11</junit.version>
@@ -32,13 +32,13 @@
         <slf4j.version>1.7.32</slf4j.version>
 
         <!--Plugin versions-->
-        <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
+        <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
         <maven.resources.plugin.version>2.6</maven.resources.plugin.version>
         <maven.clean.plugin.version>2.5</maven.clean.plugin.version>
         <maven.surefire.plugin.version>2.14</maven.surefire.plugin.version>
         <maven.failsafe.plugin.version>2.14</maven.failsafe.plugin.version>
         <maven.surefire.report.plugin.version>3.5.4</maven.surefire.report.plugin.version>
-        <maven.javadoc.plugin.version>3.11.3</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>3.12.0</maven.javadoc.plugin.version>
         <maven.dependency.plugin.version>2.7</maven.dependency.plugin.version>
     </properties>
 
