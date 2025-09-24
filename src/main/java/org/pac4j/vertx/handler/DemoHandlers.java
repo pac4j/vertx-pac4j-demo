@@ -174,7 +174,7 @@ public class DemoHandlers {
 
     public static Handler<RoutingContext> forceLogin(final Config config, final SessionStore sessionStore) {
         return rc -> {
-            final VertxWebContext context = new VertxWebContext(rc, sessionStore);
+            final VertxWebContext context = new VertxWebContext(rc);
             final Client client = config.getClients().findClient(context.getRequestParameter(Pac4jConstants.DEFAULT_CLIENT_NAME_PARAMETER).get()).get();
             try {
                 final RedirectionAction action = client.getRedirectionAction(new CallContext(context, sessionStore)).get();
@@ -187,7 +187,7 @@ public class DemoHandlers {
     }
 
     private static List<UserProfile> getUserProfiles(final RoutingContext rc, final SessionStore sessionStore) {
-        final ProfileManager profileManager = new VertxProfileManager(new VertxWebContext(rc, sessionStore), (VertxSessionStore) sessionStore);
+        final ProfileManager profileManager = new VertxProfileManager(new VertxWebContext(rc), (VertxSessionStore) sessionStore);
         return profileManager.getProfiles();
     }
 }

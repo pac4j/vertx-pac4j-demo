@@ -84,6 +84,7 @@ public class DemoServerVerticle extends AbstractVerticle {
         // need to add a json configuration file internally and ensure it's consumed by this verticle
         LOG.info("DemoServerVerticle: config is \n" + config().encodePrettily());
         config = new Pac4jConfigurationFactory(config(), vertx, vertxSessionStore).build();
+        config.setSessionStoreFactoryIfUndefined(param -> sessionStore);
 
         // Facebook-authenticated endpoints
         addProtectedEndpointWithoutAuthorizer("/facebook/index.html", "FacebookClient", router);
