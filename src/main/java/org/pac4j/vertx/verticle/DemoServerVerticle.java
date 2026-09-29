@@ -51,8 +51,10 @@ public class DemoServerVerticle extends AbstractVerticle {
         SessionHandler sessionHandler = SessionHandler.create(vertxSessionStore);
         protectedIndexRenderer = DemoHandlers.protectedIndexHandler(vertx, sessionStore);
 
-        // Only use the following handler where we want to use sessions - this is enforced by the regexp
-        router.routeWithRegex(SESSION_HANDLER_REGEXP).handler(sessionHandler);
+        // Since pac4j 5, direct clients can reuse profiles from an existing session.
+        // Keep session loading enabled for /dba/ and /rest-jwt/ as well.
+        // router.routeWithRegex(SESSION_HANDLER_REGEXP).handler(sessionHandler);
+        router.route().handler(sessionHandler);
 
         router.route().failureHandler(rc -> {
             final int statusCode = rc.statusCode();
