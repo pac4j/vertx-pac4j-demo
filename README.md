@@ -2,6 +2,9 @@
   <img src="https://pac4j.github.io/pac4j/img/logo-vertx.png" width="300" />
 </p>
 
+> This demo secures a Vert.x application with **[vertx-pac4j](https://github.com/pac4j/vertx-pac4j)**, the Vert.x implementation of **[pac4j](https://github.com/pac4j/pac4j)**, the security engine for Java.
+> If it is useful to you, please ⭐ **[star pac4j on GitHub](https://github.com/pac4j/pac4j)**: it helps other developers discover it!
+
 This `vertx-pac4j-demo` project is a Vertx web application to test the [vertx-pac4j](https://github.com/pac4j/vertx-pac4j) security library with various authentication mechanisms: Facebook, Twitter, form, basic auth, CAS, SAML, OpenID Connect, JWT...
 
 ## Start & test
